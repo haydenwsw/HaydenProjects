@@ -4,7 +4,57 @@
     ViewData["Title"] = "Home page";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://docs.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<form method="get">
+    <div class="input-group">
+        <input class="form-control" asp-for="SearchTerm" value="celica" />
+        <select class="form-box" asp-for="SortNum">
+            <option value="0">Price Low to High</option>
+            <option value="1">Price High to Low</option>
+            <option value="2">Most Recent</option>
+            <option value="3">Kilometres Low to High</option>
+            <option value="4">Kilometres High to Low</option>
+        </select>
+        <select class="form-box2" asp-for="TransNum">
+            <option value="0">All</option>
+            <option value="1">Manuel</option>
+            <option value="2">Automatic</option>
+        </select>
+        <div class="input-group-append">
+            <button type="submit" class="btn btn-primary">Search</button>
+        </div>
+    </div>
+</form>
+
+<div>
+    <ul class="itemList">
+        @foreach (var car in Model.Cars)
+        {
+            <li>
+                <a href="@car.Link" class="list-group-item">
+                    <img src="@car.ImgUrl" alt="This listing has no image" />
+                    <h3>@car.Name</h3>
+                    <p>Price: $@car.Price</p>
+                    <p>@car.KMs KM</p>
+                    <img src=@Model.getLogo(car.Source) asp-append-version="true" alt="logo" width="96" height="64" />
+                </a>
+            </li>
+        }
+    </ul>
+</div>
+
+<div>
+    <ul class="pages">
+        @if (Model.ShowPrevious)
+        {
+            <li class="page-item">
+                <a asp-page="" asp-route-SearchTerm="@Model.SearchTerm" asp-route-SortNum="@Model.SortNum" asp-route-PageNum="@(Model.PageNum - 1)" class="page-link">Previous Page</a>
+            </li>
+        }
+        @if (Model.ShowNext)
+        {
+            <li class="page-item">
+                <a asp-page="" asp-route-SearchTerm="@Model.SearchTerm" asp-route-SortNum="@Model.SortNum" asp-route-PageNum="@(Model.PageNum + 1)" class="page-link">Next Page</a>
+            </li>
+        }
+    </ul>
 </div>
