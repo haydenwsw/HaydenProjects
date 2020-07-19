@@ -43,18 +43,16 @@ namespace AutoHarvest.Pages
             // searches for used cars
             if (SearchTerm != null)
             {
-                try
-                {
-                    //Cars = CarWrapper.getCarsAsync(SearchTerm, PageNum, SortNum, TransNum).Result;
-                    Cars = new List<Car> { new Car("Toyota Celica", "https://www.youtube.com/watch?v=9bpshg0_0BQ", "https://img.youtube.com/vi/accF0gAmdeg/maxresdefault.jpg", 1, 100_000, "Gumtree"), 
-                        new Car("BMW E46", "", "", 8_000, 120_000, "Carsales"),
-                        new Car("Valtzwagon polo GTI", "", "", 10_000, 90_000, "FbMarketPlace")};
-                }
-                catch (Exception e)
-                {
-                    // log the exception
-                    ErrorLogWriter.WriteLog(e);
-                }
+                Cars = CarWrapper.getCars(SearchTerm, PageNum, SortNum, TransNum);
+                //try
+                //{
+                //    Cars = CarWrapper.getCars(SearchTerm, PageNum, SortNum, TransNum);
+                //}
+                //catch (Exception e)
+                //{
+                //    // log the exception
+                //    ErrorLogWriter.WriteLog(e);
+                //}
             }
         }
 
