@@ -5,7 +5,9 @@ VisualStudioVersion = 16.0.30309.148
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AutoHarvest", "AutoHarvest\AutoHarvest.csproj", "{66C51C42-1E38-4769-A077-B3D486F1AD54}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Launcher", "Launcher\Launcher.csproj", "{0CAF80C5-46D8-454D-A90B-CE3C4F574588}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Launcher", "Launcher\Launcher.csproj", "{0CAF80C5-46D8-454D-A90B-CE3C4F574588}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AutoHarvest.Tests", "AutoHarvest.Tests\AutoHarvest.Tests.csproj", "{18152F33-AF5E-4A83-AC69-43277DC3F23B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,6 +23,10 @@ Global
 		{0CAF80C5-46D8-454D-A90B-CE3C4F574588}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0CAF80C5-46D8-454D-A90B-CE3C4F574588}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0CAF80C5-46D8-454D-A90B-CE3C4F574588}.Release|Any CPU.Build.0 = Release|Any CPU
+		{18152F33-AF5E-4A83-AC69-43277DC3F23B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{18152F33-AF5E-4A83-AC69-43277DC3F23B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{18152F33-AF5E-4A83-AC69-43277DC3F23B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{18152F33-AF5E-4A83-AC69-43277DC3F23B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

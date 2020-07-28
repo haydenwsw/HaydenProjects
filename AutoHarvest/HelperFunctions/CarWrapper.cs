@@ -18,6 +18,13 @@ namespace AutoHarvest.HelperFunctions
             KilometresHightoLow
         }
 
+        public enum TransTypes
+        {
+            All,
+            Manuel,
+            Automatic
+        }
+
         // get all the car listing from the websties
         public static List<Car> getCars(string searchTerm, uint page, uint SortNum, uint TransNum)
         {

@@ -8,14 +8,14 @@ namespace AutoHarvest.HelperFunctions
     public static class ExtentionFunctions
     {
         // all the legal charaters for string to uint function
-        internal static readonly char[] legalChars = "1234567890".ToCharArray();
+        internal static readonly HashSet<char> legalChars = "1234567890".ToHashSet();
 
         /// <summary>
         /// returns all the numbers in the string as one number ignores all the other characters
         /// </summary>
         /// <param name="str"></param>
         /// <returns></returns>
-        internal static uint toUInt(this string str)
+        public static uint toUInt(this string str)
         {
             uint number = 0;
             uint count = 1;
@@ -24,7 +24,7 @@ namespace AutoHarvest.HelperFunctions
             // iterate backwards through the string and parse the numbers
             for (int i = str.Length - 1; i > -1; i--)
             {
-                // Todo: use hashing
+                // using a hash set for instant lookup times
                 if (legalChars.Contains(str[i]))
                 {
                     uint num = (uint)str[i] - 48;
