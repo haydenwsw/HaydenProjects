@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using Xunit;
 using AutoHarvest.Scrapers;
-using AutoHarvest.HelperFunctions;
 using AutoHarvest.Models;
 
 namespace AutoHarvest.Tests
@@ -10,17 +9,18 @@ namespace AutoHarvest.Tests
     public class TestScrapers
     {
         [Theory]
-        [InlineData("celica", 1, (uint)CarWrapper.SortTypes.PriceLowtoHigh, 0)]
-        public async void ScrapeGumtree(string search, uint page, uint sortNum, uint transNum)
+        [InlineData("celica", 1, (int)SortTypes.PriceLowtoHigh, 0)]
+        public async void ScrapeGumtree(string search, int page, int sortType, int transType)
         {
-            List<Car> GumtreeCars = await Gumtree.ScrapeGumtree(search, page, sortNum, transNum);
+            FilterOptions filterOptions = new FilterOptions(sortType, transType);
+            List<Car> GumtreeCars = await Gumtree.ScrapeGumtree(search, page, filterOptions);
 
             Assert.NotEmpty(GumtreeCars);
         }
 
         [Theory]
         [InlineData("celica", 1, 0)]
-        public async void ScrapeFbMarketPlace(string search, uint page, uint transNum)
+        public async void ScrapeFbMarketPlace(string search, int page, int transNum)
         {
             List<Car> FbMarketPlaceCars = await FbMarketPlace.ScrapeFbMarketPlace(search, page, transNum);
 
@@ -29,7 +29,7 @@ namespace AutoHarvest.Tests
 
         [Theory]
         [InlineData("celica", 1, 0)]
-        public async void ScrapeCarsales(string search, uint page, uint transNum)
+        public async void ScrapeCarsales(string search, int page, int transNum)
         {
             List<Car> CarsalesCars = await Carsales.ScrapeCarsales(search, page, transNum);
 

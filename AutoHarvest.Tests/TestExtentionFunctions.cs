@@ -13,9 +13,9 @@ namespace AutoHarvest.Tests
         [InlineData(".1234", 0)]
         [InlineData("10.10.10.10", 10)]
         [InlineData("...10...", 10)]
-        public void TestToUInt(string input, uint output)
+        public void TestToUInt(string input, int output)
         {
-            uint num = input.toUInt();
+            int num = input.toInt();
 
             Assert.Equal(output, num);
         }

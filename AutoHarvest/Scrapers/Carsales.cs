@@ -7,10 +7,10 @@ using System.Threading.Tasks;
 namespace AutoHarvest.Scrapers
 {
     // the class that webscrapes Carsales.com
-    public class Carsales
+    public static class Carsales
     {
         // webscrape ebay for all the listings
-        public static Task<List<Car>> ScrapeCarsales(string search, uint page, uint transNum)
+        public static Task<List<Car>> ScrapeCarsales(string search, int page, int transNum)
         {
             throw new NotImplementedException();
         }

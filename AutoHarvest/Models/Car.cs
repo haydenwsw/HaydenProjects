@@ -5,17 +5,17 @@ using System.Threading.Tasks;
 
 namespace AutoHarvest.Models
 {
-    public class Car
+    public struct Car
     {
         public string Name { get; private set; }
         public string Link { get; private set; }
         public string ImgUrl { get; private set; }
-        public uint Price { get; private set; }
-        public uint KMs { get; private set; }
+        public int Price { get; private set; }
+        public int KMs { get; private set; }
         public string Source { get; private set; }
 
         // init
-        public Car(string name, string link, string imgurl, uint price, uint kms, string source)
+        public Car(string name, string link, string imgurl, int price, int kms, string source)
         {
             Name = name;
             Link = link;

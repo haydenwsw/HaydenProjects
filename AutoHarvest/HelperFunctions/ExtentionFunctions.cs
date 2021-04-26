@@ -15,10 +15,10 @@ namespace AutoHarvest.HelperFunctions
         /// </summary>
         /// <param name="str"></param>
         /// <returns></returns>
-        public static uint toUInt(this string str)
+        public static int toInt(this string str)
         {
-            uint number = 0;
-            uint count = 1;
+            int number = 0;
+            int count = 1;
             bool dot = true;
 
             // iterate backwards through the string and parse the numbers
@@ -27,7 +27,7 @@ namespace AutoHarvest.HelperFunctions
                 // using a hash set for instant lookup times
                 if (legalChars.Contains(str[i]))
                 {
-                    uint num = (uint)str[i] - 48;
+                    int num = (int)str[i] - 48;
                     number = num * count + number;
                     count *= 10;
                 }

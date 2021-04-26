@@ -16,13 +16,13 @@ namespace AutoHarvest.Pages
         public string SearchTerm { get; set; }
 
         [BindProperty(SupportsGet = true)]
-        public uint SortNum { get; set; }
+        public int SortNum { get; set; }
 
         [BindProperty(SupportsGet = true)]
-        public uint TransNum { get; set; }
+        public int TransNum { get; set; }
 
         [BindProperty(SupportsGet = true)]
-        public uint PageNum { get; set; } = 1;
+        public int PageNum { get; set; } = 1;
 
         public bool ShowPrevious => PageNum > 1;
         public bool ShowNext => PageNum < 10;
@@ -43,7 +43,7 @@ namespace AutoHarvest.Pages
             // searches for used cars
             if (SearchTerm != null)
             {
-                Cars = CarWrapper.getCars(SearchTerm, PageNum, SortNum, TransNum);
+                Cars = CarWrapper.getCars(SearchTerm, PageNum, new FilterOptions(SortNum, TransNum));
                 //try
                 //{
                 //    Cars = CarWrapper.getCars(SearchTerm, PageNum, SortNum, TransNum);

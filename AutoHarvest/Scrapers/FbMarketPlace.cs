@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 namespace AutoHarvest.Scrapers
 {
     // the class that webscrapes facebook.com/marketplace
-    public class FbMarketPlace
+    public static class FbMarketPlace
     {
         // the urls for scraping
         private const string site = "https://www.facebook.com/marketplace/sydney/search";
@@ -18,7 +18,7 @@ namespace AutoHarvest.Scrapers
         private static readonly string[] trans = { "/?category_id=vehicles&query=", "?transmissionType=manual&query=", "?transmissionType=automatic&query=" };
 
         // webscrape ebay for all the listings
-        public async static Task<List<Car>> ScrapeFbMarketPlace(string search, uint page, uint transNum)
+        public async static Task<List<Car>> ScrapeFbMarketPlace(string search, int page, int transNum)
         {
             // need headless browsers to do mulitable pages this is bs
             if (page > 1)
@@ -80,7 +80,7 @@ namespace AutoHarvest.Scrapers
                 }
 
                 // add them all to the list
-                carItems.Add(new Car(texts[2], texts[4], texts[0], texts[1].toUInt(), texts[3].toUInt() * 1000, "FbMarketPlace"));
+                carItems.Add(new Car(texts[2], texts[4], texts[0], texts[1].toInt(), texts[3].toInt() * 1000, "FbMarketPlace"));
             }
 
             return carItems;

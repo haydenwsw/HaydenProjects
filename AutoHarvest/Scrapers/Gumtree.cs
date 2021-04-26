@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 namespace AutoHarvest.Scrapers
 {
     // the class that webscrapes gumtree.com
-    public class Gumtree
+    public static class Gumtree
     {
         // the urls for scraping
         private const string site = "https://www.gumtree.com.au";
@@ -21,19 +21,16 @@ namespace AutoHarvest.Scrapers
         private static readonly string[] trans = { "", "/cartransmission-m", "/cartransmission-a" };
 
         // webscrape Gumtree for all the listings
-        public async static Task<List<Car>> ScrapeGumtree(string search, uint page, uint sortNum, uint transNum)
+        public async static Task<List<Car>> ScrapeGumtree(string search, int page, FilterOptions filterOptions)
         {
             // Initializing the html doc
             HtmlDocument htmlDocument = new HtmlDocument();
 
             using (HttpClient httpClient = new HttpClient())
             {
-                // get the HTML doc of website
-                //var html = await httpClient.GetStringAsync($"{site}{args1}{search}{trans[transNum]}{args2}{page}{args3}{sort[sortNum]}");
-
                 // get the HTML doc of website with headers
                 httpClient.DefaultRequestHeaders.Add("user-agent", "Mozilla/5.0 (compatible; MSIE 10.0; Windows NT 6.2; WOW64; Trident/6.0)");
-                HttpResponseMessage response = await httpClient.GetAsync($"{site}{args1}{search}{trans[transNum]}{args2}{page}{args3}{sort[sortNum]}");
+                HttpResponseMessage response = await httpClient.GetAsync($"{site}{args1}{search}{trans[filterOptions.TransType]}{args2}{page}{args3}{sort[filterOptions.SortType]}");
                 string html = await response.Content.ReadAsStringAsync();
 
                 // Load HTML doc
@@ -43,15 +40,15 @@ namespace AutoHarvest.Scrapers
             // get all the listing
             var items = htmlDocument.DocumentNode.Descendants("div")
                   .Where(node => node.GetAttributeValue("class", "")
-                  .Equals("panel-body panel-body--flat-panel-shadow user-ad-collection__list-wrapper"))
-                  .LastOrDefault().SelectNodes("a").ToArray();
+                  .Equals("user-ad-collection-new-design__wrapper--row"))
+                  .FirstOrDefault().SelectNodes("a").ToArray();
 
             // if failed to get the listing return a emtpy list
             if (items.Length == 0)
                 return new List<Car>();
 
             // get the script that containts all the img urls
-            var script = htmlDocument.DocumentNode.Descendants("script").ToArray()[9].InnerText;
+            var script = htmlDocument.DocumentNode.Descendants("script").ToArray()[9].InnerHtml;
 
             // exstract the image urls from the script
             var imgUrls = new List<string>();
@@ -85,27 +82,16 @@ namespace AutoHarvest.Scrapers
                 string[] tags = items[i].GetAttributeValue("aria-label", "").Split('\n');
 
                 // get kms
-                //string[] arr = items[i].InnerText.Split(' ');
-                //kms = arr[arr.getFirstInstance("km") - 1].toUInt();
-                int kmI = items[i].InnerText.IndexOf("km");
-                uint kms = 100;
+                int kms = -1;
+
+                // gets the listings image url TODO: check if it has one or not
+                string imgUrl = imgUrls[counter++];
 
                 // get the item url
                 string link = site + items[i].GetAttributeValue("href", "");
 
-                // get if the listing has a img or not
-                idx = items[i].InnerHtml.IndexOf("has") + 4;
-                string hasImage = "";
-                for (int _ = 0; _ < 3; _++)
-                    hasImage = hasImage + items[i].InnerHtml[idx++];
-
-                // check if the listing has a img or not
-                string imgUrl = "";
-                if (hasImage == "ima")
-                    imgUrl = imgUrls[counter++];
-
                 // add them all to the list
-                carItems.Add(new Car(tags[0], link, imgUrl, tags[1].toUInt(), kms, "Gumtree"));
+                carItems.Add(new Car(tags[0], link, imgUrl, tags[1].toInt(), kms, "Gumtree"));
             }
 
             // return the list

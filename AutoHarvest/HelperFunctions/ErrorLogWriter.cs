@@ -6,13 +6,13 @@ using System.Threading.Tasks;
 
 namespace AutoHarvest.HelperFunctions
 {
-    public class ErrorLogWriter
+    public static class ErrorLogWriter
     {
         // write to the log files
         internal static StreamWriter ErrorLog = new StreamWriter("ErrorLog.txt", true);
 
         public static void WriteLog(Exception exc)
-        {
+        {           
             // log the exception
             ErrorLog.WriteLine(exc.Message);
             ErrorLog.WriteLine(exc.StackTrace);
