@@ -30,6 +30,7 @@ namespace AutoHarvest.Scrapers
             {
                 // get the HTML doc of website with headers
                 httpClient.DefaultRequestHeaders.Add("user-agent", "Mozilla/5.0 (compatible; MSIE 10.0; Windows NT 6.2; WOW64; Trident/6.0)");
+                //string e = $"{site}{args1}{search}{trans[filterOptions.TransType]}{args2}{page}{args3}{sort[filterOptions.SortType]}";
                 HttpResponseMessage response = await httpClient.GetAsync($"{site}{args1}{search}{trans[filterOptions.TransType]}{args2}{page}{args3}{sort[filterOptions.SortType]}");
                 string html = await response.Content.ReadAsStringAsync();
 
@@ -82,7 +83,7 @@ namespace AutoHarvest.Scrapers
                 string[] tags = items[i].GetAttributeValue("aria-label", "").Split('\n');
 
                 // get kms
-                int kms = -1;
+                int kms = items[i].ChildNodes[1].ChildNodes[2].ChildNodes[0].ChildNodes[0].InnerText.toInt();
 
                 // gets the listings image url TODO: check if it has one or not
                 string imgUrl = imgUrls[counter++];

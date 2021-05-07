@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using AutoHarvest.Singletons;
 using AutoHarvest.HelperFunctions;
 using AutoHarvest.Models;
 using Microsoft.AspNetCore.Mvc;
@@ -31,19 +32,22 @@ namespace AutoHarvest.Pages
 
         private readonly ILogger<IndexModel> _logger;
 
+        private readonly CarWrapper CarWrapper;
+
         // init
-        public IndexModel(ILogger<IndexModel> logger)
+        public IndexModel(ILogger<IndexModel> logger, CarWrapper carwrapper)
         {
             _logger = logger;
             Cars = new List<Car>();
+            CarWrapper = carwrapper;
         }
 
-        public void OnGet()
+        public async Task OnGet()
         {
             // searches for used cars
             if (SearchTerm != null)
             {
-                Cars = CarWrapper.getCars(SearchTerm, PageNum, new FilterOptions(SortNum, TransNum));
+                Cars = await CarWrapper.getCarsAsync(SearchTerm, PageNum, new FilterOptions(SortNum, TransNum));
                 //try
                 //{
                 //    Cars = CarWrapper.getCars(SearchTerm, PageNum, SortNum, TransNum);
@@ -61,8 +65,8 @@ namespace AutoHarvest.Pages
         {
             switch (source)
             {
-                case "FbMarketPlace":
-                    return "~/logos/FbMarketPlace.png";
+                case "FbMarketplace":
+                    return "~/logos/FbMarketplace.png";
                 case "Gumtree":
                     return "~/logos/Gumtree.jpg";
                 case "Carsales":

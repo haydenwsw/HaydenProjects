@@ -6,50 +6,41 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
+using AutoHarvest.Singletons;
 
 namespace AutoHarvest.Scrapers
 {
     // the class that webscrapes facebook.com/marketplace
-    public static class FbMarketPlace
+    public static class FbMarketplace
     {
         // the urls for scraping
         private const string site = "https://www.facebook.com/marketplace/sydney/search";
         private const string args = "&category_id=vehicles&exact=false";
         private static readonly string[] trans = { "/?category_id=vehicles&query=", "?transmissionType=manual&query=", "?transmissionType=automatic&query=" };
 
-        // webscrape ebay for all the listings
-        public async static Task<List<Car>> ScrapeFbMarketPlace(string search, int page, int transNum)
+        // webscrape FbMarketplace for all the listings
+        public async static Task<List<Car>> ScrapeFbMarketplace(CefSharpHeadless HeadlessBrowser, string search, int page, int transNum)
         {
             // need headless browsers to do mulitable pages this is bs
             if (page > 1)
                 return new List<Car>();
-
+            
             // Initializing the html doc
             HtmlDocument htmlDocument = new HtmlDocument();
 
-            using (HttpClient httpClient = new HttpClient())
-            {
-                // get the HTML doc of website
-                httpClient.DefaultRequestHeaders.Add("user-agent", "Mozilla/5.0 (compatible; MSIE 10.0; Windows NT 6.2; WOW64; Trident/6.0)");
-                HttpResponseMessage response = await httpClient.GetAsync($"{site}{trans[transNum]}{search}{args}");
-                string html = await response.Content.ReadAsStringAsync();
+            // get the HTML doc of website
+            string url = $"{site}{trans[transNum]}{search}{args}";
+            HeadlessBrowser.OpenUrl(url);
+            string html = await HeadlessBrowser.GetSourceAsync();
 
-                // Load HTML doc
-                htmlDocument.LoadHtml(html);
-            }
+            // Load HTML doc
+            htmlDocument.LoadHtml(html);
 
-            // get all the listing
-            var scripts = htmlDocument.DocumentNode.Descendants("script").ToArray();
+            // gets the longest string in the list
+            string script = htmlDocument.DocumentNode.Descendants("script").Aggregate("", (max, cur) => max.Length > cur.InnerText.Length ? max : cur.InnerText);
 
-            // if failed to get the listing return a emtpy list
-            if (scripts.Length == 0)
-                return new List<Car>();
-
-            // set the third last item in the array
-            var script = scripts[scripts.Length - 3].InnerText;
-
-            // arrays to store the text
-            string[] keyWords = { "uri:", "text:", "marketplace_listing_title:", "custom_sub_titles:[", "url:" };
+            // arrays to find and store the data, 0: url, 1: imgUrl, 2: price, 3: title, 4: kms
+            string[] keyWords = { "GroupCommerceProductItem\",\"id\":", "image\":{\"uri\":", "amount\":\"", "listing_title\":", "subtitle\":" };
             string[] texts = { "", "", "", "", "" };
 
             var carItems = new List<Car>();
@@ -72,7 +63,8 @@ namespace AutoHarvest.Scrapers
                     string text = "";
                     while (script[idx + 1] != '"')
                     {
-                        text += script[++idx];
+                        if (script[++idx] != '\\')
+                            text += script[idx];
                     }
 
                     // add the text to the array
@@ -80,7 +72,7 @@ namespace AutoHarvest.Scrapers
                 }
 
                 // add them all to the list
-                carItems.Add(new Car(texts[2], texts[4], texts[0], texts[1].toInt(), texts[3].toInt() * 1000, "FbMarketPlace"));
+                carItems.Add(new Car(texts[3], "https://www.facebook.com/marketplace/" + texts[0], texts[1], texts[2].toInt(), texts[4].toInt() * 1000, "FbMarketplace"));
             }
 
             return carItems;

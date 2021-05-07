@@ -1,4 +1,5 @@
-﻿using System;
+﻿using HtmlAgilityPack;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -19,6 +20,36 @@ namespace AutoHarvest.HelperFunctions
             ErrorLog.WriteLine(exc.Source);
             ErrorLog.WriteLine("");
             ErrorLog.Flush();
+        }
+
+        // use this when a scraper breaks (again)
+        public static void WriteHtmlNodes(HtmlNode[] Htmlnodes)
+        {
+            StreamWriter scriptss = new StreamWriter("Nodes.txt", false);
+
+            for (int i = 0; i < Htmlnodes.Length; i++)
+            {
+                scriptss.WriteLine($"[{i}]");
+                scriptss.WriteLine(Htmlnodes[i].InnerText);
+                scriptss.WriteLine("");
+            }
+
+            scriptss.Flush();
+        }
+
+        public static void WriteHtmlNodes(IEnumerable<HtmlNode> Htmlnodes)
+        {
+            StreamWriter scriptss = new StreamWriter("Nodes.txt", false);
+
+            int i = 0;
+            foreach (HtmlNode Htmlnode in Htmlnodes)
+            {
+                scriptss.WriteLine($"[{i++}]");
+                scriptss.WriteLine(Htmlnode.InnerText);
+                scriptss.WriteLine("");
+            }
+
+            scriptss.Flush();
         }
     }
 }

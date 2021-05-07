@@ -9,7 +9,7 @@ namespace AutoHarvest.Tests
     public class TestScrapers
     {
         [Theory]
-        [InlineData("celica", 1, (int)SortTypes.PriceLowtoHigh, 0)]
+        [InlineData("celica", 1, (int)SortTypes.PriceLowtoHigh, (int)TransTypes.All)]
         public async void ScrapeGumtree(string search, int page, int sortType, int transType)
         {
             FilterOptions filterOptions = new FilterOptions(sortType, transType);
@@ -19,10 +19,10 @@ namespace AutoHarvest.Tests
         }
 
         [Theory]
-        [InlineData("celica", 1, 0)]
+        [InlineData("celica", 1, (int)TransTypes.All)]
         public async void ScrapeFbMarketPlace(string search, int page, int transNum)
         {
-            List<Car> FbMarketPlaceCars = await FbMarketPlace.ScrapeFbMarketPlace(search, page, transNum);
+            List<Car> FbMarketPlaceCars = await FbMarketplace.ScrapeFbMarketplace(null, search, page, transNum);
 
             Assert.NotEmpty(FbMarketPlaceCars);
         }
