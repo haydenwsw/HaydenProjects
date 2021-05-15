@@ -83,7 +83,7 @@ namespace AutoHarvest.Scrapers
                 string[] tags = items[i].GetAttributeValue("aria-label", "").Split('\n');
 
                 // get kms
-                int kms = items[i].ChildNodes[1].ChildNodes[2].ChildNodes[0].ChildNodes[0].InnerText.toInt();
+                int kms = items[i].ChildNodes[1].ChildNodes[2].ChildNodes[0].ChildNodes[0].InnerText.ToInt();
 
                 // gets the listings image url TODO: check if it has one or not
                 string imgUrl = imgUrls[counter++];
@@ -92,7 +92,7 @@ namespace AutoHarvest.Scrapers
                 string link = site + items[i].GetAttributeValue("href", "");
 
                 // add them all to the list
-                carItems.Add(new Car(tags[0], link, imgUrl, tags[1].toInt(), kms, "Gumtree"));
+                carItems.Add(new Car(tags[0], link, imgUrl, tags[1].ToInt(), kms, "Gumtree"));
             }
 
             // return the list

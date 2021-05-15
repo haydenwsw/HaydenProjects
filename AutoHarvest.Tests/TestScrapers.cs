@@ -18,22 +18,22 @@ namespace AutoHarvest.Tests
             Assert.NotEmpty(GumtreeCars);
         }
 
-        [Theory]
-        [InlineData("celica", 1, (int)TransTypes.All)]
-        public async void ScrapeFbMarketPlace(string search, int page, int transNum)
-        {
-            List<Car> FbMarketPlaceCars = await FbMarketplace.ScrapeFbMarketplace(null, search, page, transNum);
+        //[Theory]
+        //[InlineData("celica", 1, (int)TransTypes.All)]
+        //public async void ScrapeFbMarketPlace(string search, int page, int transNum)
+        //{
+        //    List<Car> FbMarketPlaceCars = await FbMarketplace.ScrapeFbMarketplace(null, search, page, transNum);
 
-            Assert.NotEmpty(FbMarketPlaceCars);
-        }
+        //    Assert.NotEmpty(FbMarketPlaceCars);
+        //}
 
-        [Theory]
-        [InlineData("celica", 1, 0)]
-        public async void ScrapeCarsales(string search, int page, int transNum)
-        {
-            List<Car> CarsalesCars = await Carsales.ScrapeCarsales(search, page, transNum);
+        //[Theory]
+        //[InlineData("celica", 1, 0)]
+        //public async void ScrapeCarsales(string search, int page, int transNum)
+        //{
+        //    List<Car> CarsalesCars = await Carsales.ScrapeCarsales(search, page, transNum);
 
-            Assert.NotEmpty(CarsalesCars);
-        }
+        //    Assert.NotEmpty(CarsalesCars);
+        //}
     }
 }

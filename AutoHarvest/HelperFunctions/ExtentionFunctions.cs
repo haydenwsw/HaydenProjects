@@ -15,7 +15,7 @@ namespace AutoHarvest.HelperFunctions
         /// </summary>
         /// <param name="str"></param>
         /// <returns></returns>
-        public static int toInt(this string str)
+        public static int ToInt(this string str)
         {
             int number = 0;
             int count = 1;

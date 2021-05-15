@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using AutoHarvest.Singletons;
+using AutoHarvest.Scoped;
 using AutoHarvest.HelperFunctions;
 using AutoHarvest.Models;
 using Microsoft.AspNetCore.Mvc;
@@ -13,14 +13,20 @@ namespace AutoHarvest.Pages
 {
     public class IndexModel : PageModel
     {
-        [BindProperty(SupportsGet = true)]
-        public string SearchTerm { get; set; }
+        //[BindProperty(SupportsGet = true)]
+        //public string SearchTerm { get; set; }
 
         [BindProperty(SupportsGet = true)]
-        public int SortNum { get; set; }
+        public int MakeType { get; set; }
 
         [BindProperty(SupportsGet = true)]
-        public int TransNum { get; set; }
+        public int ModelType { get; set; }
+
+        [BindProperty(SupportsGet = true)]
+        public int SortType { get; set; }
+
+        [BindProperty(SupportsGet = true)]
+        public int TransType { get; set; }
 
         [BindProperty(SupportsGet = true)]
         public int PageNum { get; set; } = 1;
@@ -45,9 +51,9 @@ namespace AutoHarvest.Pages
         public async Task OnGet()
         {
             // searches for used cars
-            if (SearchTerm != null)
+            if (MakeType != 0)
             {
-                Cars = await CarWrapper.getCarsAsync(SearchTerm, PageNum, new FilterOptions(SortNum, TransNum));
+                Cars = await CarWrapper.getCarsAsync("celica", PageNum, new FilterOptions(SortType, TransType));
                 //try
                 //{
                 //    Cars = CarWrapper.getCars(SearchTerm, PageNum, SortNum, TransNum);

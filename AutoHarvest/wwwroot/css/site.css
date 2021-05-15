@@ -33,10 +33,10 @@ body {
     color: snow;
 }
 
-#SearchTerm {
+/*#SearchTerm {
     background-color: rgb(64, 64, 64);
     color: snow;
-}
+}*/
 
 /* List */
 .itemList {
@@ -58,15 +58,15 @@ li p {
     color: snow;
 }
 
-li {
+.carItem {
     padding: 10px;
     overflow: auto;
 }
 
-    li:hover {
-        background: lightgrey;
-        cursor: pointer;
-    }
+.carItem:hover {
+    background: lightgrey;
+    cursor: pointer;
+}
 
 .list-group-item {
     background-color: rgb(75, 75, 75);
@@ -79,11 +79,19 @@ select {
     color: snow;
 }
 
-img {
-    /*width: 100%;
-    height: auto;*/
-    /* Magic! */
-    /*max-width: 50vw;*/
+.itemText li {
+    display: inline;
+    margin-left: 30px;
+}
+
+.infoWrapper {
+    margin-top: 25px;
+}
+
+.infoWrapper li {
+    list-style-type: none;
+    color: snow;
+    margin-bottom: 15px;
 }
 
 /* Page buttons */

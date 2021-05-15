@@ -8,7 +8,8 @@ using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using AutoHarvest.Singletons;
+using AutoHarvest.Scoped;
+using AutoHarvest.Transient;
 
 namespace AutoHarvest
 {
@@ -26,7 +27,11 @@ namespace AutoHarvest
         {
             services.AddRazorPages();
 
-            services.AddSingleton(new CarWrapper());
+            // add the scraper wrapper class
+            services.AddScoped<CarWrapper>();
+
+            // add the car list
+            services.AddTransient<CarLookup>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

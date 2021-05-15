@@ -7,19 +7,14 @@ using System.Threading;
 using CefSharp;
 using CefSharp.OffScreen;
 
-namespace AutoHarvest.Singletons
+namespace AutoHarvest.Scoped
 {
     public class CefSharpHeadless
     {
         /// <summary>
-        /// The browser page
-        /// </summary>
-        public ChromiumWebBrowser Page { get; private set; }
-
-        /// <summary>
         /// The request context
         /// </summary>
-        public RequestContext RequestContext { get; private set; }
+        private RequestContext RequestContext { get; set; }
 
         // chromium does not manage timeouts, so we'll implement one
         private readonly ManualResetEvent manualResetEvent = new ManualResetEvent(false);
@@ -28,7 +23,7 @@ namespace AutoHarvest.Singletons
         {
             var settings = new CefSettings()
             {
-                //By default CefSharp will use an in-memory cache, you need to     specify a Cache Folder to persist data
+                //By default CefSharp will use an in-memory cache, you need to specify a Cache Folder to persist data
                 CachePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "CefSharp\\Cache"),
             };
 
@@ -39,8 +34,6 @@ namespace AutoHarvest.Singletons
             Cef.Initialize(settings, performDependencyCheck: true, browserProcessHandler: null);
 
             RequestContext = new RequestContext();
-            Page = new ChromiumWebBrowser("", null, RequestContext);
-            PageInitialize();
         }
 
         /// <summary>
@@ -48,8 +41,12 @@ namespace AutoHarvest.Singletons
         /// </summary>
         /// <param name="url">the url</param>
         /// <returns></returns>
-        public void OpenUrl(string url)
+        public Task<string> GetHtmlAsync(string url)
         {
+            // create a new page and wait for Initializion
+            ChromiumWebBrowser Page = new ChromiumWebBrowser("", null, RequestContext);
+            SpinWait.SpinUntil(() => Page.IsBrowserInitialized);
+
             try
             {
                 Page.LoadingStateChanged += PageLoadingStateChanged;
@@ -73,14 +70,18 @@ namespace AutoHarvest.Singletons
                 //happens on the manualResetEvent.Reset(); when a cancelation token has disposed the context
             }
             Page.LoadingStateChanged -= PageLoadingStateChanged;
+
+            // get the html
+            return GetSourceAsync(ref Page);
         }
 
         /// <summary>
         /// Gets the page's html
         /// </summary>
         /// <returns></returns>
-        public Task<string> GetSourceAsync()
+        private Task<string> GetSourceAsync(ref ChromiumWebBrowser Page)
         {
+            // get the main html frame
             string name = Page.GetBrowser().GetFrameNames().First(item => item == "");
 
             return Page.GetBrowser().GetFrame(name).GetSourceAsync();
@@ -100,14 +101,6 @@ namespace AutoHarvest.Singletons
                 manualResetEvent.Set();
             }
 
-        }
-
-        /// <summary>
-        /// Wait until page initialization
-        /// </summary>
-        private void PageInitialize()
-        {
-            SpinWait.SpinUntil(() => Page.IsBrowserInitialized);
         }
     }
 }

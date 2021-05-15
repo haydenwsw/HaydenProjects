@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
-using AutoHarvest.Singletons;
+using AutoHarvest.Scoped;
 
 namespace AutoHarvest.Scrapers
 {
@@ -30,8 +30,7 @@ namespace AutoHarvest.Scrapers
 
             // get the HTML doc of website
             string url = $"{site}{trans[transNum]}{search}{args}";
-            HeadlessBrowser.OpenUrl(url);
-            string html = await HeadlessBrowser.GetSourceAsync();
+            string html = await HeadlessBrowser.GetHtmlAsync(url);
 
             // Load HTML doc
             htmlDocument.LoadHtml(html);
@@ -72,7 +71,7 @@ namespace AutoHarvest.Scrapers
                 }
 
                 // add them all to the list
-                carItems.Add(new Car(texts[3], "https://www.facebook.com/marketplace/" + texts[0], texts[1], texts[2].toInt(), texts[4].toInt() * 1000, "FbMarketplace"));
+                carItems.Add(new Car(texts[3], "https://www.facebook.com/marketplace/" + texts[0], texts[1], texts[2].ToInt(), texts[4].ToInt() * 1000, "FbMarketplace"));
             }
 
             return carItems;
