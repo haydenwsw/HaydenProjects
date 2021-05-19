@@ -23,11 +23,13 @@ namespace AutoHarvest.Models
 
     public struct FilterOptions
     {
+        public string SearchTerm { get; private set; }
         public int SortType { get; set; }
         public int TransType { get; private set; }
 
-        public FilterOptions(int sorttype, int transtype)
+        public FilterOptions(string searchterm, int sorttype, int transtype)
         {
+            SearchTerm = searchterm;
             SortType = sorttype;
             TransType = transtype;
         }

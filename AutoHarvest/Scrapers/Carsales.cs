@@ -1,6 +1,6 @@
 ﻿using AutoHarvest.HelperFunctions;
 using AutoHarvest.Models;
-using AutoHarvest.Scoped;
+using AutoHarvest.Singleton;
 using HtmlAgilityPack;
 using System;
 using System.Collections.Generic;
@@ -15,30 +15,35 @@ namespace AutoHarvest.Scrapers
     {
         private const string site = "https://www.carsales.com.au/";
         private const string args = "cars/used/toyota/celica/new-south-wales-state/";
-        private static readonly string[] SortType = { "?sort=~Price", "?sort=Price", "?sort=LastUpdated", "?sort=~Odometer", "?sort=Odometer" };
+        private static readonly string[] SortType = { "~Price", "Price", "LastUpdated", "~Odometer", "Odometer" };
 
         // webscrape ebay for all the listings
-        public static async Task<List<Car>> ScrapeCarsales(CefSharpHeadless HeadlessBrowser, string search, int page, int sortType)
+        public static async Task<List<Car>> ScrapeCarsales(Func<string, Task<string>> GetHtmlAsync, FilterOptions filterOptions, int page)
         {
-            // carsales has no "search bar" so im just gonna have to do this for now
-            if (search != "celica")
+            // im stuiped there is a search bar i'll fix this later
+            if (filterOptions.SearchTerm != "celica")
                 return new List<Car>();
 
             // Initializing the html doc
             HtmlDocument htmlDocument = new HtmlDocument();
 
             // get the HTML doc of website
-            string url = $"{site}{args}{SortType[sortType]}";
-            string html = await HeadlessBrowser.GetHtmlAsync(url);
+            string url = $"{site}/cars/?sort={SortType[filterOptions.SortType]}&q=(And.Service.CARSALES._.CarAll.keyword({filterOptions.SearchTerm})._.State.New South Wales.)";
+            string html = await GetHtmlAsync(url);
 
             // Load HTML doc
             htmlDocument.LoadHtml(html);
 
             // get all the listing
-            var items = htmlDocument.DocumentNode.Descendants("div")
+            var nodes = htmlDocument.DocumentNode.Descendants("div")
                   .Where(node => node.GetAttributeValue("class", "")
-                  .Equals("listing-items"))
-                  .FirstOrDefault().SelectNodes("div").ToArray();
+                  .Equals("listing-items"));
+
+            // if failed return empty
+            if (nodes.Count() == 0)
+                return new List<Car>();
+
+            var items = nodes.FirstOrDefault().SelectNodes("div").ToArray();
 
             // if failed to get the listing return a emtpy list
             if (items.Length == 0)
@@ -74,7 +79,7 @@ namespace AutoHarvest.Scrapers
                 var kms = cardbody.SelectSingleNode(".//div//div//ul//li").InnerText.ToInt();
 
                 // add them all to the list
-                carItems.Add(new Car(name, "https://www.carsales.com.au/cars/" + link, imgurl, price, kms, "Carsales"));
+                carItems.Add(new Car(name, site + link, imgurl, price, kms, "Carsales"));
             }
 
             return carItems;

@@ -33,10 +33,11 @@ body {
     color: snow;
 }
 
-/*#SearchTerm {
+/* Search bar */
+#SearchTerm {
     background-color: rgb(64, 64, 64);
     color: snow;
-}*/
+}
 
 /* List */
 .itemList {
@@ -44,6 +45,11 @@ body {
 }
 
 h3 {
+    font: bold 20px/ Helvetica, Verdana, sans-serif;
+    color: snow;
+}
+
+h4 {
     font: bold 20px/ Helvetica, Verdana, sans-serif;
     color: snow;
 }
@@ -79,19 +85,16 @@ select {
     color: snow;
 }
 
-.itemText li {
-    display: inline;
-    margin-left: 30px;
-}
-
-.infoWrapper {
-    margin-top: 25px;
-}
-
-.infoWrapper li {
+.itemText {
+    margin-top: 20px;
     list-style-type: none;
     color: snow;
-    margin-bottom: 15px;
+    margin-bottom: 20px;
+}
+
+.itemText li {
+    display: inline;
+    margin-left: 10px;
 }
 
 /* Page buttons */

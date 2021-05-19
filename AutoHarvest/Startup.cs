@@ -9,7 +9,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using AutoHarvest.Scoped;
-using AutoHarvest.Transient;
+using AutoHarvest.Singleton;
 
 namespace AutoHarvest
 {
@@ -30,8 +30,8 @@ namespace AutoHarvest
             // add the scraper wrapper class
             services.AddScoped<CarWrapper>();
 
-            // add the car list
-            services.AddTransient<CarLookup>();
+            // add the headless browser
+            services.AddSingleton<CefSharpHeadless>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

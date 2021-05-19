@@ -4,9 +4,8 @@ using HtmlAgilityPack;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net.Http;
 using System.Threading.Tasks;
-using AutoHarvest.Scoped;
+using AutoHarvest.Singleton;
 
 namespace AutoHarvest.Scrapers
 {
@@ -19,7 +18,7 @@ namespace AutoHarvest.Scrapers
         private static readonly string[] trans = { "/?category_id=vehicles&query=", "?transmissionType=manual&query=", "?transmissionType=automatic&query=" };
 
         // webscrape FbMarketplace for all the listings
-        public async static Task<List<Car>> ScrapeFbMarketplace(CefSharpHeadless HeadlessBrowser, string search, int page, int transNum)
+        public async static Task<List<Car>> ScrapeFbMarketplace(Func<string, Task<string>> GetHtmlAsync, FilterOptions filterOptions, int page)
         {
             // need headless browsers to do mulitable pages this is bs
             if (page > 1)
@@ -29,8 +28,8 @@ namespace AutoHarvest.Scrapers
             HtmlDocument htmlDocument = new HtmlDocument();
 
             // get the HTML doc of website
-            string url = $"{site}{trans[transNum]}{search}{args}";
-            string html = await HeadlessBrowser.GetHtmlAsync(url);
+            string url = $"{site}{trans[filterOptions.TransType]}{filterOptions.SearchTerm}{args}";
+            string html = await GetHtmlAsync(url);
 
             // Load HTML doc
             htmlDocument.LoadHtml(html);

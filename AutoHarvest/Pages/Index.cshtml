@@ -6,28 +6,22 @@
 
 <form method="get">
     <div class="input-group">
-        <select class="selectMake" id="Make" asp-for="MakeType">
-            <option value="0">Toyota</option>
-            <option value="1">BMW</option>
-            <option value="2">Volkswagen</option>
+        <input class="form-control" asp-for="SearchTerm" value="celica" />
+
+        <select class="selectBoxSort" id="selectSort" asp-for="SortType">
+            <option value=0>Price Low to High</option>
+            <option value=1>Price High to Low</option>
+            <option value=2>Most Recent</option>
+            <option value=3>Kilometres Low to High</option>
+            <option value=4>Kilometres High to Low</option>
         </select>
 
-        <select class="selectModel" id="Models" asp-for="ModelType">
-            <option value="0">All Models</option>
+        <select class="selectBoxTrans" id="selectTrans" asp-for="TransType">
+            <option value=0>All</option>
+            <option value=1>Manuel</option>
+            <option value=2>Automatic</option>
         </select>
 
-        <select class="selectSort" asp-for="SortType">
-            <option value="0">Price Low to High</option>
-            <option value="1">Price High to Low</option>
-            <option value="2">Most Recent</option>
-            <option value="3">Kilometres Low to High</option>
-            <option value="4">Kilometres High to Low</option>
-        </select>
-        <select class="selectTrans" asp-for="TransType">
-            <option value="0">All</option>
-            <option value="1">Manuel</option>
-            <option value="2">Automatic</option>
-        </select>
         <div class="input-group-append">
             <button type="submit" class="btn btn-primary">Search</button>
         </div>
@@ -42,22 +36,12 @@
                 <a href="@car.Link" class="list-group-item">
                     <img src="@car.ImgUrl" alt="This listing has no image" width="200" height="200">
                     <h3>@car.Name</h3>
-                    <ul class="infoWrapper">
-                        <li>
-                            <ul class="itemText">
-                                <li>• Price: $@car.Price</li>
-                                <li>• @car.KMs KM</li>
-                                <li>• hello</li>
-                            </ul>
-                        </li>
-
-                        <li>
-                            <ul class="itemText">
-                                <li>• Price: $@car.Price</li>
-                                <li>• @car.KMs KM</li>
-                                <li>• hello</li>
-                            </ul>
-                        </li>
+                    <h4>💰@car.Price</h4>
+                
+                    <ul class="itemText">
+                        <li>🔧 @car.KMs KM</li>
+                        <li>🚗 extra info</li>
+                        <li>⚙️ extra info</li>
                     </ul>
 
                     <img src=@Model.getLogo(car.Source) asp-append-version="true" alt="logo" width="96" height="64" />
@@ -73,13 +57,13 @@
         @if (Model.ShowPrevious)
         {
         <li class="page-item">
-            <a asp-page="" asp-route-MakeType="@Model.MakeType" asp-route-SortType="@Model.SortType" asp-route-PageNum="@(Model.PageNum - 1)" class="page-link">Previous Page</a>
+            <a asp-page="" asp-route-MakeType="@Model.SearchTerm" asp-route-SortType="@Model.SortType" asp-route-PageNum="@(Model.PageNum - 1)" class="page-link">Previous Page</a>
         </li>
         }
         @if (Model.ShowNext)
         {
         <li class="page-item">
-            <a asp-page="" asp-route-MakeType="@Model.MakeType" asp-route-SortType="@Model.SortType" asp-route-PageNum="@(Model.PageNum + 1)" class="page-link">Next Page</a>
+            <a asp-page="" asp-route-MakeType="@Model.SearchTerm" asp-route-SortType="@Model.SortType" asp-route-PageNum="@(Model.PageNum + 1)" class="page-link">Next Page</a>
         </li>
         }
     </ul>

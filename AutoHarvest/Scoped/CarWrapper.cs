@@ -1,5 +1,6 @@
 ﻿using AutoHarvest.Models;
 using AutoHarvest.Scrapers;
+using AutoHarvest.Singleton;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,32 +14,37 @@ namespace AutoHarvest.Scoped
     /// </summary>
     public class CarWrapper
     {
-        // headless browser for facebook
-        private static CefSharpHeadless HeadlessBrowser = new CefSharpHeadless();
+        // headless browser for webscraping
+        private readonly CefSharpHeadless HeadlessBrowser;
+
+        public CarWrapper(CefSharpHeadless headlessbrowser)
+        {
+            HeadlessBrowser = headlessbrowser;
+        }
 
         // get all the car listing from the websties asynchronously
-        public async Task<List<Car>> getCarsAsync(string searchTerm, int page, FilterOptions filterOptions)
+        public async Task<List<Car>> getCarsAsync(FilterOptions filterOptions, int page)
         {
             // scrape all the websites
-            //var CarsalesCars = Carsales.ScrapeCarsales(HeadlessBrowser, searchTerm, page, filterOptions.SortType);
-            //var FbMarketplaceCars = FbMarketplace.ScrapeFbMarketplace(HeadlessBrowser, searchTerm, page, filterOptions.TransType);
-            var GumtreeCars = Gumtree.ScrapeGumtree(searchTerm, page, filterOptions).Result;
+            var CarsalesCars = Carsales.ScrapeCarsales(HeadlessBrowser.GetHtmlAsync, filterOptions, page);
+            var FbMarketplaceCars = FbMarketplace.ScrapeFbMarketplace(HeadlessBrowser.GetHtmlAsync, filterOptions, page);
+            var GumtreeCars = Gumtree.ScrapeGumtree(filterOptions, page);
 
             // await all the taks in parallel at once
-            //await Task.WhenAll(GumtreeCars, FbMarketplaceCars, CarsalesCars);
+            await Task.WhenAll(FbMarketplaceCars, CarsalesCars, GumtreeCars);
 
             // create the list to the lenght of all the lists
-            //var Cars = new List<Car>(GumtreeCars.Result.Count + FbMarketplaceCars.Result.Count + CarsalesCars.Result.Count);
+            var Cars = new List<Car>(CarsalesCars.Result.Count + GumtreeCars.Result.Count + FbMarketplaceCars.Result.Count);
 
             // combine all the lists
-            //Cars.AddRange(GumtreeCars.Result);
-            //Cars.AddRange(FbMarketplaceCars.Result);
-            //Cars.AddRange(CarsalesCars.Result);
+            Cars.AddRange(CarsalesCars.Result);
+            Cars.AddRange(FbMarketplaceCars.Result);
+            Cars.AddRange(GumtreeCars.Result);
 
             // sort the list
-            Sort(ref GumtreeCars, filterOptions.SortType);
+            Sort(ref Cars, filterOptions.SortType);
 
-            return GumtreeCars;
+            return Cars;
         }
 
         // sorts the list

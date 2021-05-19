@@ -7,7 +7,7 @@ using System.Threading;
 using CefSharp;
 using CefSharp.OffScreen;
 
-namespace AutoHarvest.Scoped
+namespace AutoHarvest.Singleton
 {
     public class CefSharpHeadless
     {
@@ -19,21 +19,28 @@ namespace AutoHarvest.Scoped
         // chromium does not manage timeouts, so we'll implement one
         private readonly ManualResetEvent manualResetEvent = new ManualResetEvent(false);
 
+        // the page that the links are loaded on
+        private readonly ChromiumWebBrowser Page;
+
         public CefSharpHeadless()
         {
             var settings = new CefSettings()
             {
-                //By default CefSharp will use an in-memory cache, you need to specify a Cache Folder to persist data
+                // By default CefSharp will use an in-memory cache, you need to specify a Cache Folder to persist data
                 CachePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "CefSharp\\Cache"),
             };
 
-            //Autoshutdown when closing
+            // Autoshutdown when closing
             CefSharpSettings.ShutdownOnExit = true;
 
-            //Perform dependency check to make sure all relevant resources are in our     output directory.
+            // Perform dependency check to make sure all relevant resources are in our     output directory.
             Cef.Initialize(settings, performDependencyCheck: true, browserProcessHandler: null);
 
             RequestContext = new RequestContext();
+
+            // create a new page and wait for Initializion
+            Page = new ChromiumWebBrowser("", null, RequestContext);
+            SpinWait.SpinUntil(() => Page.IsBrowserInitialized);
         }
 
         /// <summary>
@@ -43,10 +50,6 @@ namespace AutoHarvest.Scoped
         /// <returns></returns>
         public Task<string> GetHtmlAsync(string url)
         {
-            // create a new page and wait for Initializion
-            ChromiumWebBrowser Page = new ChromiumWebBrowser("", null, RequestContext);
-            SpinWait.SpinUntil(() => Page.IsBrowserInitialized);
-
             try
             {
                 Page.LoadingStateChanged += PageLoadingStateChanged;
@@ -54,11 +57,11 @@ namespace AutoHarvest.Scoped
                 {
                     Page.Load(url);
 
-                    //create a 60 sec timeout 
-                    bool isSignalled = manualResetEvent.WaitOne(TimeSpan.FromSeconds(60));
+                    // create a 10 sec timeout 
+                    bool isSignalled = manualResetEvent.WaitOne(TimeSpan.FromSeconds(10));
                     manualResetEvent.Reset();
 
-                    //As the request may actually get an answer, we'll force stop when the timeout is passed
+                    // As the request may actually get an answer, we'll force stop when the timeout is passed
                     if (!isSignalled)
                     {
                         Page.Stop();
@@ -67,12 +70,12 @@ namespace AutoHarvest.Scoped
             }
             catch (ObjectDisposedException)
             {
-                //happens on the manualResetEvent.Reset(); when a cancelation token has disposed the context
+                // happens on the manualResetEvent.Reset(); when a cancelation token has disposed the context
             }
             Page.LoadingStateChanged -= PageLoadingStateChanged;
 
             // get the html
-            return GetSourceAsync(ref Page);
+            return Page.GetBrowser().GetFrame("").GetSourceAsync();
         }
 
         /// <summary>
