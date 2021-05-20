@@ -97,6 +97,10 @@ select {
     margin-left: 10px;
 }
 
+.fa {
+    color: deepskyblue;
+}
+
 /* Page buttons */
 .pages {
     display: flex;

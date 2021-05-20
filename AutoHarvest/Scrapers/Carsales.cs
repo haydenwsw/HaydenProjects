@@ -14,7 +14,6 @@ namespace AutoHarvest.Scrapers
     public static class Carsales
     {
         private const string site = "https://www.carsales.com.au/";
-        private const string args = "cars/used/toyota/celica/new-south-wales-state/";
         private static readonly string[] SortType = { "~Price", "Price", "LastUpdated", "~Odometer", "Odometer" };
 
         // webscrape ebay for all the listings
@@ -63,23 +62,33 @@ namespace AutoHarvest.Scrapers
                 string link = cardheader.ChildNodes[1].GetAttributeValue("href", "");
 
                 // get listing thumbnails
-                HtmlNodeCollection imgs = cardheader.SelectNodes(".//a//div//div//img");
+                HtmlNodeCollection imgs = cardheader.SelectNodes("./a/div/div/img");
                 string imgurl = imgs[0].GetAttributeValue("src", ""); // i just do one for now
 
                 // div for the texts
-                HtmlNode cardbody = items[i].SelectSingleNode(".//div[@class='card-body']");
+                HtmlNode cardbody = items[i].SelectSingleNode("./div[@class='card-body']");
 
                 // get listing title
-                string name = cardbody.SelectSingleNode(".//div//div//h3//a").InnerText;
+                string name = cardbody.SelectSingleNode("./div/div/h3/a").InnerText;
 
                 // get listing price
-                int price = cardbody.SelectSingleNode(".//div//div//div//div//a").InnerText.ToInt();
+                int price = cardbody.SelectSingleNode("./div/div/div/div/a").InnerText.ToInt();
+
+                // get all the extra info in the listing
+                var extrainfo = cardbody.SelectNodes("./div[2]/div[1]/ul/li");
 
                 // get listing odomitor
-                var kms = cardbody.SelectSingleNode(".//div//div//ul//li").InnerText.ToInt();
+                int kms = extrainfo[0].InnerText.ToInt();
+
+                // get body type, transmission type and engine cyl
+                string[] info = new string[3];
+                for (int j = 1; j < extrainfo.Count; j++)
+                {
+                    info[j - 1] = extrainfo[j].InnerText;
+                }
 
                 // add them all to the list
-                carItems.Add(new Car(name, site + link, imgurl, price, kms, "Carsales"));
+                carItems.Add(new Car(name, site + link, imgurl, price, kms, info, "Carsales"));
             }
 
             return carItems;

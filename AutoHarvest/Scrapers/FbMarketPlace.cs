@@ -13,8 +13,7 @@ namespace AutoHarvest.Scrapers
     public static class FbMarketplace
     {
         // the urls for scraping
-        private const string site = "https://www.facebook.com/marketplace/sydney/search";
-        private const string args = "&category_id=vehicles&exact=false";
+        private const string site = "https://www.facebook.com/marketplace/";
         private static readonly string[] trans = { "/?category_id=vehicles&query=", "?transmissionType=manual&query=", "?transmissionType=automatic&query=" };
 
         // webscrape FbMarketplace for all the listings
@@ -28,7 +27,7 @@ namespace AutoHarvest.Scrapers
             HtmlDocument htmlDocument = new HtmlDocument();
 
             // get the HTML doc of website
-            string url = $"{site}{trans[filterOptions.TransType]}{filterOptions.SearchTerm}{args}";
+            string url = $"{site}sydney/search{trans[filterOptions.TransType]}{filterOptions.SearchTerm}&category_id=vehicles&exact=false";
             string html = await GetHtmlAsync(url);
 
             // Load HTML doc
@@ -70,7 +69,7 @@ namespace AutoHarvest.Scrapers
                 }
 
                 // add them all to the list
-                carItems.Add(new Car(texts[3], "https://www.facebook.com/marketplace/" + texts[0], texts[1], texts[2].ToInt(), texts[4].ToInt() * 1000, "FbMarketplace"));
+                carItems.Add(new Car(texts[3], site + "item/" + texts[0], texts[1], texts[2].ToInt(), texts[4].ToInt() * 1000, new string[0], "FbMarketplace"));
             }
 
             return carItems;

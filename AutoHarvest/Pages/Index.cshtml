@@ -4,6 +4,8 @@
     ViewData["Title"] = "Home page";
 }
 
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+
 <form method="get">
     <div class="input-group">
         <input class="form-control" asp-for="SearchTerm" value="celica" />
@@ -36,12 +38,18 @@
                 <a href="@car.Link" class="list-group-item">
                     <img src="@car.ImgUrl" alt="This listing has no image" width="200" height="200">
                     <h3>@car.Name</h3>
-                    <h4>💰@car.Price</h4>
-                
+                    <h4><i class="fa fa-usd"></i> <i>@car.Price</i></h4>
+
                     <ul class="itemText">
-                        <li>🔧 @car.KMs KM</li>
-                        <li>🚗 extra info</li>
-                        <li>⚙️ extra info</li>
+                        <li> <i class="fa fa-line-chart"></i> <i>@car.KMs KM</i></li>
+                        @for (int i = 0; i < car.ExtraInfo.Length; i++)
+                        {
+                            @if (car.ExtraInfo[i] != null)
+                            {
+                                <li> <i class="@IndexModel.Icons[i]"></i> <i>@car.ExtraInfo[i]</i></li>
+                            }
+                        }
+
                     </ul>
 
                     <img src=@Model.getLogo(car.Source) asp-append-version="true" alt="logo" width="96" height="64" />

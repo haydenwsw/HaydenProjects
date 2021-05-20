@@ -34,21 +34,21 @@ namespace AutoHarvest.Pages
         public bool ShowPrevious => PageNum > 1;
         public bool ShowNext => PageNum < 10;
 
+        // the icons for all the extra info
+        public static readonly string[] Icons = new string[3] { "fa fa-car", "fa fa-cog", "fa fa-wrench" };
+
         private readonly ILogger<IndexModel> _logger;
 
         public IEnumerable<Car> Cars { get; set; }
 
         public readonly CarWrapper CarWrapper;
 
-        public readonly CarLookup CarLookup;
-
         // init
-        public IndexModel(ILogger<IndexModel> logger, CarWrapper carwrapper, CarLookup carlookup)
+        public IndexModel(ILogger<IndexModel> logger, CarWrapper carwrapper)
         {
             _logger = logger;
             Cars = new List<Car>();
             CarWrapper = carwrapper;
-            CarLookup = carlookup;
         }
 
         public async Task OnGet()

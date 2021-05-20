@@ -8,7 +8,7 @@ namespace AutoHarvest.HelperFunctions
     public static class ExtentionFunctions
     {
         // all the legal charaters for string to uint function
-        internal static readonly HashSet<char> legalChars = "1234567890".ToHashSet();
+        private static readonly HashSet<char> legalChars = "1234567890".ToHashSet();
 
         /// <summary>
         /// returns all the numbers in the string as one number ignores all the other characters

@@ -79,18 +79,6 @@ namespace AutoHarvest.Singleton
         }
 
         /// <summary>
-        /// Gets the page's html
-        /// </summary>
-        /// <returns></returns>
-        private Task<string> GetSourceAsync(ref ChromiumWebBrowser Page)
-        {
-            // get the main html frame
-            string name = Page.GetBrowser().GetFrameNames().First(item => item == "");
-
-            return Page.GetBrowser().GetFrame(name).GetSourceAsync();
-        }
-
-        /// <summary>
         /// Manage the IsLoading parameter
         /// </summary>
         /// <param name="sender"></param>
