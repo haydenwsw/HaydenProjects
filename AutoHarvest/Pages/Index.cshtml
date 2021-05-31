@@ -65,13 +65,13 @@
         @if (Model.ShowPrevious)
         {
         <li class="page-item">
-            <a asp-page="" asp-route-MakeType="@Model.SearchTerm" asp-route-SortType="@Model.SortType" asp-route-PageNum="@(Model.PageNum - 1)" class="page-link">Previous Page</a>
+            <a asp-page="" asp-route-SearchTerm="@Model.SearchTerm" asp-route-SortType="@Model.SortType" asp-route-PageNum="@(Model.PageNum - 1)" class="page-link">Previous Page</a>
         </li>
         }
         @if (Model.ShowNext)
         {
         <li class="page-item">
-            <a asp-page="" asp-route-MakeType="@Model.SearchTerm" asp-route-SortType="@Model.SortType" asp-route-PageNum="@(Model.PageNum + 1)" class="page-link">Next Page</a>
+            <a asp-page="" asp-route-SearchTerm="@Model.SearchTerm" asp-route-SortType="@Model.SortType" asp-route-PageNum="@(Model.PageNum + 1)" class="page-link">Next Page</a>
         </li>
         }
     </ul>

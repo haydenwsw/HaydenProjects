@@ -32,7 +32,7 @@ namespace AutoHarvest.Pages
 
         // page number properties
         public bool ShowPrevious => PageNum > 1;
-        public bool ShowNext => PageNum < 10;
+        public bool ShowNext => PageNum < 10 && SearchTerm != null;
 
         // the icons for all the extra info
         public static readonly string[] Icons = new string[3] { "fa fa-car", "fa fa-cog", "fa fa-wrench" };
@@ -57,15 +57,6 @@ namespace AutoHarvest.Pages
             if (SearchTerm != null)
             {
                 Cars = await CarWrapper.getCarsAsync(new FilterOptions(SearchTerm, SortType, TransType), PageNum);
-                //try
-                //{
-                //    Cars = CarWrapper.getCars(SearchTerm, PageNum, SortNum, TransNum);
-                //}
-                //catch (Exception e)
-                //{
-                //    // log the exception
-                //    ErrorLogWriter.WriteLog(e);
-                //}
             }
         }
 

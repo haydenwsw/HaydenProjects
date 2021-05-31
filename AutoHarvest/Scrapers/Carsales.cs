@@ -15,19 +15,16 @@ namespace AutoHarvest.Scrapers
     {
         private const string site = "https://www.carsales.com.au/";
         private static readonly string[] SortType = { "~Price", "Price", "LastUpdated", "~Odometer", "Odometer" };
+        private static readonly string[] TransType = { "", "._.GenericGearType.Manual", "._.GenericGearType.Automatic" };
 
         // webscrape ebay for all the listings
         public static async Task<List<Car>> ScrapeCarsales(Func<string, Task<string>> GetHtmlAsync, FilterOptions filterOptions, int page)
         {
-            // im stuiped there is a search bar i'll fix this later
-            if (filterOptions.SearchTerm != "celica")
-                return new List<Car>();
-
             // Initializing the html doc
             HtmlDocument htmlDocument = new HtmlDocument();
 
             // get the HTML doc of website
-            string url = $"{site}/cars/?sort={SortType[filterOptions.SortType]}&q=(And.Service.CARSALES._.CarAll.keyword({filterOptions.SearchTerm})._.State.New South Wales.)";
+            string url = $"{site}/cars/?sort={SortType[filterOptions.SortType]}&q=(And.Service.CARSALES._.CarAll.keyword({filterOptions.SearchTerm})._.State.New South Wales{TransType[filterOptions.TransType]}.)&offset={(page - 1) * 12}";
             string html = await GetHtmlAsync(url);
 
             // Load HTML doc

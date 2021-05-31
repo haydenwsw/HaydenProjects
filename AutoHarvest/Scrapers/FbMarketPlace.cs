@@ -14,12 +14,13 @@ namespace AutoHarvest.Scrapers
     {
         // the urls for scraping
         private const string site = "https://www.facebook.com/marketplace/";
-        private static readonly string[] trans = { "/?category_id=vehicles&query=", "?transmissionType=manual&query=", "?transmissionType=automatic&query=" };
+        private static readonly string[] trans = { "", "&transmissionType=manual", "&transmissionType=automatic" };
+        private static readonly string[] sort = { "price_ascend", "price_descend", "best_match", "best_match", "best_match" };
 
         // webscrape FbMarketplace for all the listings
         public async static Task<List<Car>> ScrapeFbMarketplace(Func<string, Task<string>> GetHtmlAsync, FilterOptions filterOptions, int page)
         {
-            // need headless browsers to do mulitable pages this is bs
+            // requres to save the page per user and activate js
             if (page > 1)
                 return new List<Car>();
             
@@ -27,7 +28,7 @@ namespace AutoHarvest.Scrapers
             HtmlDocument htmlDocument = new HtmlDocument();
 
             // get the HTML doc of website
-            string url = $"{site}sydney/search{trans[filterOptions.TransType]}{filterOptions.SearchTerm}&category_id=vehicles&exact=false";
+            string url = $"{site}sydney/search?sortBy={sort[filterOptions.SortType]}{trans[filterOptions.TransType]}&query={filterOptions.SearchTerm}&category_id=vehicles&exact=false";
             string html = await GetHtmlAsync(url);
 
             // Load HTML doc
