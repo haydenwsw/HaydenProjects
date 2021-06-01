@@ -1,14 +1,14 @@
 ﻿@page
 @model IndexModel
 @{
-    ViewData["Title"] = "Home page";
+    ViewData["Title"] = Model.Title;
 }
 
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
 
 <form method="get">
     <div class="input-group">
-        <input class="form-control" asp-for="SearchTerm" value="celica" />
+        <input class="form-control" asp-for="SearchTerm" value=@Model.SearchTerm />
 
         <select class="selectBoxSort" id="selectSort" asp-for="SortType">
             <option value=0>Price Low to High</option>
@@ -20,9 +20,18 @@
 
         <select class="selectBoxTrans" id="selectTrans" asp-for="TransType">
             <option value=0>All</option>
-            <option value=1>Manuel</option>
+            <option value=1>Manual</option>
             <option value=2>Automatic</option>
         </select>
+
+        <input type="checkbox" id="cb1" asp-for="ToggleCarsales" />
+        <label for="cb1"><img src=@Model.getLogo("Carsales") asp-append-version="true" alt="CS" width="46" height="30" /></label>
+
+        <input type="checkbox" id="cb2" asp-for="ToggleFBMarketplace" />
+        <label for="cb2"><img src=@Model.getLogo("FbMarketplace") asp-append-version="true" alt="MP" width="46" height="30" /></label>
+
+        <input type="checkbox" id="cb3" asp-for="ToggleGumtree" />
+        <label for="cb3"><img src=@Model.getLogo("Gumtree") asp-append-version="true" alt="GT" width="46" height="30" /></label>
 
         <div class="input-group-append">
             <button type="submit" class="btn btn-primary">Search</button>
@@ -64,15 +73,17 @@
     <ul class="pages">
         @if (Model.ShowPrevious)
         {
-        <li class="page-item">
-            <a asp-page="" asp-route-SearchTerm="@Model.SearchTerm" asp-route-SortType="@Model.SortType" asp-route-PageNum="@(Model.PageNum - 1)" class="page-link">Previous Page</a>
-        </li>
+            <li class="page-item">
+                <a asp-page="" asp-route-SearchTerm="@Model.SearchTerm" asp-route-SortType="@Model.SortType" asp-route-PageNum="@(Model.PageNum - 1)" class="page-link">Previous Page</a>
+            </li>
         }
         @if (Model.ShowNext)
         {
-        <li class="page-item">
-            <a asp-page="" asp-route-SearchTerm="@Model.SearchTerm" asp-route-SortType="@Model.SortType" asp-route-PageNum="@(Model.PageNum + 1)" class="page-link">Next Page</a>
-        </li>
+            <li class="page-item">
+                <a asp-page="" asp-route-SearchTerm="@Model.SearchTerm" asp-route-SortType="@Model.SortType" asp-route-PageNum="@(Model.PageNum + 1)" class="page-link">Next Page</a>
+            </li>
         }
     </ul>
 </div>
+
+@*var model = @Html.Raw(Json.Serialize(Model));*@

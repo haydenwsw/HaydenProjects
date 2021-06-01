@@ -9,6 +9,7 @@ using AutoHarvest.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.Logging;
+using Microsoft.AspNetCore.Http;
 
 namespace AutoHarvest.Pages
 {
@@ -26,6 +27,16 @@ namespace AutoHarvest.Pages
         [BindProperty(SupportsGet = true)]
         public int TransType { get; set; }
 
+        // the toggles for websites to scrape
+        [BindProperty(SupportsGet = true)]
+        public bool ToggleCarsales { get; set; } = true;
+
+        [BindProperty(SupportsGet = true)]
+        public bool ToggleFBMarketplace { get; set; } = true;
+
+        [BindProperty(SupportsGet = true)]
+        public bool ToggleGumtree { get; set; } = true;
+
         // the page's number
         [BindProperty(SupportsGet = true)]
         public int PageNum { get; set; } = 1;
@@ -37,6 +48,9 @@ namespace AutoHarvest.Pages
         // the icons for all the extra info
         public static readonly string[] Icons = new string[3] { "fa fa-car", "fa fa-cog", "fa fa-wrench" };
 
+        // the websites title
+        public string Title;
+
         private readonly ILogger<IndexModel> _logger;
 
         public IEnumerable<Car> Cars { get; set; }
@@ -44,8 +58,9 @@ namespace AutoHarvest.Pages
         public readonly CarWrapper CarWrapper;
 
         // init
-        public IndexModel(ILogger<IndexModel> logger, CarWrapper carwrapper)
+        public IndexModel(ILogger<IndexModel> logger, CarWrapper carwrapper, Events events)
         {
+            Title = events.GetTitle();
             _logger = logger;
             Cars = new List<Car>();
             CarWrapper = carwrapper;
@@ -56,7 +71,10 @@ namespace AutoHarvest.Pages
             // searches for used cars
             if (SearchTerm != null)
             {
-                Cars = await CarWrapper.getCarsAsync(new FilterOptions(SearchTerm, SortType, TransType), PageNum);
+                FilterOptions filterOptions = new FilterOptions(SearchTerm, SortType, TransType);
+                Toggles toggles = new Toggles(ToggleCarsales, ToggleFBMarketplace, ToggleGumtree);
+
+                Cars = await CarWrapper.getCarsAsync(filterOptions, toggles, PageNum);
             }
         }
 
@@ -65,12 +83,12 @@ namespace AutoHarvest.Pages
         {
             switch (source)
             {
+                case "Carsales":
+                    return "~/logos/Carsales.png";
                 case "FbMarketplace":
                     return "~/logos/FbMarketplace.png";
                 case "Gumtree":
                     return "~/logos/Gumtree.jpg";
-                case "Carsales":
-                    return "~/logos/Carsales.png";
                 default:
                     return "";
             }

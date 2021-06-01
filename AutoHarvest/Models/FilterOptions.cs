@@ -24,7 +24,7 @@ namespace AutoHarvest.Models
     public struct FilterOptions
     {
         public string SearchTerm { get; private set; }
-        public int SortType { get; set; }
+        public int SortType { get; private set; }
         public int TransType { get; private set; }
 
         public FilterOptions(string searchterm, int sorttype, int transtype)
@@ -32,6 +32,20 @@ namespace AutoHarvest.Models
             SearchTerm = searchterm;
             SortType = sorttype;
             TransType = transtype;
+        }
+    }
+
+    public struct Toggles
+    {
+        public bool ToggleCarsales { get; set; }
+        public bool ToggleFBMarketplace { get; set; }
+        public bool ToggleGumtree { get; set; }
+
+        public Toggles(bool togglecarsales, bool toggleFBmarketplace, bool togglegumtree)
+        {
+            ToggleCarsales = togglecarsales;
+            ToggleFBMarketplace = toggleFBmarketplace;
+            ToggleGumtree = togglegumtree;
         }
     }
 }

@@ -5,6 +5,9 @@ using System.Threading.Tasks;
 
 namespace AutoHarvest.Singleton
 {
+    /// <summary>
+    /// class for storing all the car makes and models
+    /// </summary>
     public class CarLookup
     {
         public Dictionary<string, string[]> MakeModel = new Dictionary<string, string[]>

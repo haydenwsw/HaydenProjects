@@ -119,3 +119,14 @@ select {
     background-color: rgb(75, 75, 75);
     border: 1px solid #dee2e6;
 }
+
+/* Privacy */
+h1 {
+    font: bold 20px/ Helvetica, Verdana, sans-serif;
+    color: snow;
+}
+
+p {
+    font: 200 14px Helvetica, Times New Roman, serif;
+    color: snow;
+}

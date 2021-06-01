@@ -32,6 +32,9 @@ namespace AutoHarvest
 
             // add the headless browser
             services.AddSingleton<CefSharpHeadless>();
+
+            // add the event class
+            services.AddSingleton<Events>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

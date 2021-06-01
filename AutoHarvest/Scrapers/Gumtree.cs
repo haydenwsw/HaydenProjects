@@ -49,16 +49,17 @@ namespace AutoHarvest.Scrapers
             var script = htmlDocument.DocumentNode.Descendants("script").ToArray()[9].InnerHtml;
 
             // exstract the image urls from the script
+            string key = "mainImageUrl\":";
             var imgUrls = new List<string>();
-            int idx = script.IndexOf("35.jpg", 0);
+            int idx = script.IndexOf(key, 0);
             while (idx != -1)
             {
-                // walk backwards through the string to construct the url
-                string imgUrl = "35.jpg";
-                int i = idx;
-                while (script[i - 1] != '"')
+                // walk forwards through the string to construct the text
+                idx += key.Length + 1;
+                string imgUrl = "";
+                while (script[idx] != '"')
                 {
-                    imgUrl = $"{script[--i]}{imgUrl}";
+                    imgUrl += script[idx++];
                 }
                 imgUrls.Add(imgUrl);
 
@@ -67,7 +68,7 @@ namespace AutoHarvest.Scrapers
                     break;
 
                 // find the next url in the string
-                idx = script.IndexOf("35.jpg", idx + 1);
+                idx = script.IndexOf(key, idx + 1);
             }
 
             var carItems = new List<Car>();
@@ -92,7 +93,7 @@ namespace AutoHarvest.Scrapers
                     info[j - 1] = extrainfo[j].InnerText;
                 }
 
-                // gets the listings image url TODO: check if it has one or not
+                // gets the listings image url
                 string imgUrl = imgUrls[counter++];
 
                 // get the item url

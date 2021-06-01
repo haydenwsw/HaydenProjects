@@ -23,12 +23,28 @@ namespace AutoHarvest.Scoped
         }
 
         // get all the car listing from the websties asynchronously
-        public async Task<List<Car>> getCarsAsync(FilterOptions filterOptions, int page)
+        public async Task<List<Car>> getCarsAsync(FilterOptions filterOptions, Toggles toggles, int page)
         {
-            // scrape all the websites
-            var CarsalesCars = Carsales.ScrapeCarsales(HeadlessBrowser.GetHtmlAsync, filterOptions, page);
-            var FbMarketplaceCars = FbMarketplace.ScrapeFbMarketplace(HeadlessBrowser.GetHtmlAsync, filterOptions, page);
-            var GumtreeCars = Gumtree.ScrapeGumtree(filterOptions, page);
+            // scrape carsales based on toggle
+            Task<List<Car>> CarsalesCars;
+            if (toggles.ToggleCarsales)
+                CarsalesCars = Carsales.ScrapeCarsales(HeadlessBrowser.GetHtmlAsync, filterOptions, page);
+            else
+                CarsalesCars = Task.FromResult(new List<Car>());
+
+            // scrape facebook marketplace based on toggle
+            Task<List<Car>> FbMarketplaceCars;
+            if (toggles.ToggleFBMarketplace)
+                FbMarketplaceCars = FbMarketplace.ScrapeFbMarketplace(HeadlessBrowser.GetHtmlAsync, filterOptions, page);
+            else
+                FbMarketplaceCars = Task.FromResult(new List<Car>());
+
+            // scrape gumtree based on toggle
+            Task<List<Car>> GumtreeCars;
+            if (toggles.ToggleGumtree)
+                GumtreeCars = Gumtree.ScrapeGumtree(filterOptions, page);
+            else
+                GumtreeCars = Task.FromResult(new List<Car>());
 
             // await all the taks in parallel at once
             await Task.WhenAll(FbMarketplaceCars, CarsalesCars, GumtreeCars);
