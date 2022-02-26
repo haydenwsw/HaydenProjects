@@ -6,7 +6,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="CefSharp.OffScreen.NETCore" Version="89.0.170" />
+    <PackageReference Include="CefSharp.OffScreen.NETCore" Version="98.1.210" />
     <PackageReference Include="HtmlAgilityPack" Version="1.11.24" />
   </ItemGroup>
 
