@@ -27,6 +27,14 @@ namespace AutoHarvest.Pages
         [BindProperty(SupportsGet = true)]
         public int TransType { get; set; }
 
+        // the minimum price
+        [BindProperty(SupportsGet = true)]
+        public string PriceMin { get; set; }
+
+        // the maxium price
+        [BindProperty(SupportsGet = true)]
+        public string PriceMax { get; set; }
+
         // the toggles for websites to scrape
         [BindProperty(SupportsGet = true)]
         public bool ToggleCarsales { get; set; } = true;
@@ -57,13 +65,16 @@ namespace AutoHarvest.Pages
 
         public readonly CarWrapper CarWrapper;
 
+        public readonly LogoLookup LogoLookup;
+
         // init
-        public IndexModel(ILogger<IndexModel> logger, CarWrapper carwrapper, Events events)
+        public IndexModel(ILogger<IndexModel> logger, CarWrapper carwrapper, LogoLookup logoLookup, Events events)
         {
             Title = events.GetTitle();
             _logger = logger;
             Cars = new List<Car>();
             CarWrapper = carwrapper;
+            LogoLookup = logoLookup;
         }
 
         public async Task OnGet()
@@ -71,7 +82,7 @@ namespace AutoHarvest.Pages
             // searches for used cars
             if (SearchTerm != null)
             {
-                FilterOptions filterOptions = new FilterOptions(SearchTerm, SortType, TransType);
+                FilterOptions filterOptions = new FilterOptions(SearchTerm, SortType, TransType, PriceMin.LeaveOnlyNumbers(), PriceMax.LeaveOnlyNumbers());
                 Toggles toggles = new Toggles(ToggleCarsales, ToggleFBMarketplace, ToggleGumtree);
 
                 Cars = await CarWrapper.getCarsAsync(filterOptions, toggles, PageNum);
@@ -79,19 +90,9 @@ namespace AutoHarvest.Pages
         }
 
         // get the logo of the listings website that is was scraped from
-        public string getLogo(string source)
+        public Logo getLogo(string source)
         {
-            switch (source)
-            {
-                case "Carsales":
-                    return "~/logos/Carsales.png";
-                case "FbMarketplace":
-                    return "~/logos/FbMarketplace.png";
-                case "Gumtree":
-                    return "~/logos/Gumtree.jpg";
-                default:
-                    return "";
-            }
+            return LogoLookup.GetLogo(source);
         }
     }
 }

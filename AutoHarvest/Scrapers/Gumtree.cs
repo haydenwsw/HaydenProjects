@@ -27,7 +27,7 @@ namespace AutoHarvest.Scrapers
             {
                 // get the HTML doc of website with headers
                 httpClient.DefaultRequestHeaders.Add("user-agent", "Mozilla/5.0 (compatible; MSIE 10.0; Windows NT 6.2; WOW64; Trident/6.0)");
-                string url = $"{site}/s-cars-vans-utes/nsw/{filterOptions.SearchTerm}{trans[filterOptions.TransType]}/page-{page}/k0c18320l3008839{sort[filterOptions.SortType]}";
+                string url = $"{site}/s-cars-vans-utes/nsw/{filterOptions.SearchTerm}{trans[filterOptions.TransType]}/page-{page}/k0c18320l3008839{sort[filterOptions.SortType]}&price={filterOptions.PriceMin}__{filterOptions.PriceMax}";
                 HttpResponseMessage response = await httpClient.GetAsync(url);
                 string html = await response.Content.ReadAsStringAsync();
 

@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 namespace AutoHarvest.Singleton
 {
     /// <summary>
-    /// class for storing all the car makes and models
+    /// class for storing all the car makes and models WIP
     /// </summary>
     public class CarLookup
     {

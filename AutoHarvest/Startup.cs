@@ -33,6 +33,9 @@ namespace AutoHarvest
             // add the headless browser
             services.AddSingleton<CefSharpHeadless>();
 
+            // add the LogoLookup class
+            services.AddSingleton<LogoLookup>();
+
             // add the event class
             services.AddSingleton<Events>();
         }

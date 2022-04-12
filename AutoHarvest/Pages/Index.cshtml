@@ -7,61 +7,105 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
 
 <form method="get">
-    <div class="input-group">
-        <input class="form-control" asp-for="SearchTerm" value=@Model.SearchTerm />
 
-        <select class="selectBoxSort" id="selectSort" asp-for="SortType">
-            <option value=0>Price Low to High</option>
-            <option value=1>Price High to Low</option>
-            <option value=2>Most Recent</option>
-            <option value=3>Kilometres Low to High</option>
-            <option value=4>Kilometres High to Low</option>
-        </select>
+    <table class="center">
 
-        <select class="selectBoxTrans" id="selectTrans" asp-for="TransType">
-            <option value=0>All</option>
-            <option value=1>Manual</option>
-            <option value=2>Automatic</option>
-        </select>
+        <tr>
+            <td>Keywords:</td>
+            <td>Sort:</td>
+            <td>Transmission:</td>
+            <td>PriceMin:</td>
+            <td>PriceMax:</td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td>Location:</td>
+        </tr>
 
-        <input type="checkbox" id="cb1" asp-for="ToggleCarsales" />
-        <label for="cb1"><img src=@Model.getLogo("Carsales") asp-append-version="true" alt="CS" width="46" height="30" /></label>
+        <tr>
 
-        <input type="checkbox" id="cb2" asp-for="ToggleFBMarketplace" />
-        <label for="cb2"><img src=@Model.getLogo("FbMarketplace") asp-append-version="true" alt="MP" width="46" height="30" /></label>
+            <td>
+                <input id="SearchTerm" class="form-control" asp-for="SearchTerm" value=@Model.SearchTerm />
+            </td>
 
-        <input type="checkbox" id="cb3" asp-for="ToggleGumtree" />
-        <label for="cb3"><img src=@Model.getLogo("Gumtree") asp-append-version="true" alt="GT" width="46" height="30" /></label>
+            <td>
+                <select class="selectBoxSort" id="selectSort" onchange="sortList()" asp-for="SortType">
+                    <option value=0>Price Low to High</option>
+                    <option value=1>Price High to Low</option>
+                    <option value=2>Unsorted</option>
+                    <option value=3>Kilometres Low to High</option>
+                    <option value=4>Kilometres High to Low</option>
+                </select>
+            </td>
 
-        <div class="input-group-append">
-            <button type="submit" class="btn btn-primary">Search</button>
-        </div>
-    </div>
+            <td>
+                <select class="selectBoxTrans" id="selectTrans" asp-for="TransType">
+                    <option value=0>All</option>
+                    <option value=1>Manual</option>
+                    <option value=2>Automatic</option>
+                </select>
+            </td>
+
+            <td>
+                <input id="PriceMin" class="form-control" asp-for="PriceMin" value=@Model.PriceMin />
+            </td>
+
+            <td>
+                <input id="PriceMax" class="form-control" asp-for="PriceMax" value=@Model.PriceMax />
+            </td>
+
+            <td>
+                <input type="checkbox" id="cb1" asp-for="ToggleCarsales" />
+                <label for="cb1"><img src=@Model.getLogo("Carsales").LogoUrl asp-append-version="true" alt="CS" width="87" height="35" /></label>
+            </td>
+
+            <td>
+                <input type="checkbox" id="cb2" asp-for="ToggleFBMarketplace" />
+                <label for="cb2"><img src=@Model.getLogo("FbMarketplace").LogoUrl asp-append-version="true" alt="MP" width="35" height="35" /></label>
+            </td>
+
+            <td>
+                <input type="checkbox" id="cb3" asp-for="ToggleGumtree" />
+                <label for="cb3"><img src=@Model.getLogo("Gumtree").LogoUrl asp-append-version="true" alt="GT" width="47" height="35" /></label>
+            </td>
+
+            <td>
+                <select class="selectBoxLocation" id="selectLocation" disabled style="color: gray;">
+                    <option value=0>NSW</option>
+                </select>
+            </td>
+
+            <td>
+                <button type="submit" class="btn btn-primary">Search</button>
+            </td>
+        </tr>
+    </table>
+
 </form>
 
 <div>
-    <ul class="itemList">
+    <ul id="itemList" class="itemList">
         @foreach (var car in Model.Cars)
         {
             <li class="carItem">
                 <a href="@car.Link" class="list-group-item">
                     <img src="@car.ImgUrl" alt="This listing has no image" width="200" height="200">
                     <h3>@car.Name</h3>
-                    <h4><i class="fa fa-usd"></i> <i>@car.Price</i></h4>
+                    <h4><i class="fa fa-usd"></i> <i class="price">@car.Price</i></h4>
 
                     <ul class="itemText">
-                        <li> <i class="fa fa-line-chart"></i> <i>@car.KMs KM</i></li>
+                        <li style="display: inline;"> <i class="fa fa-line-chart"></i> <i class="KMs">@car.KMs KM</i></li>
                         @for (int i = 0; i < car.ExtraInfo.Length; i++)
                         {
                             @if (car.ExtraInfo[i] != null)
                             {
-                                <li> <i class="@IndexModel.Icons[i]"></i> <i>@car.ExtraInfo[i]</i></li>
+                                <li class="extraInfo"> <i class="@IndexModel.Icons[i]"></i> <i>@car.ExtraInfo[i]</i></li>
                             }
                         }
 
                     </ul>
-
-                    <img src=@Model.getLogo(car.Source) asp-append-version="true" alt="logo" width="96" height="64" />
+                    @{ var logo = Model.getLogo(car.Source); }
+                    <img src=@logo.LogoUrl asp-append-version="true" alt="logo" width=@logo.LogoWidth height=@logo.LogoHeight />
 
                 </a>
             </li>
@@ -74,16 +118,82 @@
         @if (Model.ShowPrevious)
         {
             <li class="page-item">
-                <a asp-page="" asp-route-SearchTerm="@Model.SearchTerm" asp-route-SortType="@Model.SortType" asp-route-PageNum="@(Model.PageNum - 1)" class="page-link">Previous Page</a>
+                <a asp-page="" asp-route-SearchTerm="@Model.SearchTerm" asp-route-SortType="@Model.SortType"
+                   asp-route-TransType="@Model.TransType" asp-route-PriceMin="@Model.PriceMin" asp-route-PriceMax="@Model.PriceMax"
+                   asp-route-ToggleCarsales="@Model.ToggleCarsales" asp-route-ToggleFBMarketplace="@Model.ToggleFBMarketplace"
+                   asp-route-ToggleGumtree="@Model.ToggleGumtree" asp-route-PageNum="@(Model.PageNum - 1)" class="page-link">Previous Page</a>
             </li>
         }
         @if (Model.ShowNext)
         {
             <li class="page-item">
-                <a asp-page="" asp-route-SearchTerm="@Model.SearchTerm" asp-route-SortType="@Model.SortType" asp-route-PageNum="@(Model.PageNum + 1)" class="page-link">Next Page</a>
+                <a asp-page="" asp-route-SearchTerm="@Model.SearchTerm" asp-route-SortType="@Model.SortType"
+                   asp-route-TransType="@Model.TransType" asp-route-PriceMin="@Model.PriceMin" asp-route-PriceMax="@Model.PriceMax"
+                   asp-route-ToggleCarsales="@Model.ToggleCarsales" asp-route-ToggleFBMarketplace="@Model.ToggleFBMarketplace"
+                   asp-route-ToggleGumtree="@Model.ToggleGumtree" asp-route-PageNum="@(Model.PageNum + 1)" class="page-link">Next Page</a>
             </li>
         }
     </ul>
 </div>
 
-@*var model = @Html.Raw(Json.Serialize(Model));*@
+<script>
+
+    function sortList() {
+
+        let list = document.getElementById("itemList").getElementsByClassName("carItem");
+        let n = list.length;
+        let idx = document.getElementById("selectSort").selectedIndex;
+
+        let i, j;
+        let swapped;
+        for (i = 0; i < n - 1; i++) {
+
+            swapped = false;
+            for (j = 0; j < n - i - 1; j++) {
+
+                switch (idx) {
+                    // sort price low to high
+                    case 0:
+                        let item1 = Number(list[j].getElementsByClassName("price")[0].innerText);
+                        let item2 = Number(list[j + 1].getElementsByClassName("price")[0].innerText);
+                        if (item1 > item2) {
+                            list[i].parentNode.insertBefore(list[j + 1], list[j]);
+                            swapped = true;
+                        }
+                        break;
+                    // sort price high to low
+                    case 1:
+                        let item1 = Number(list[j].getElementsByClassName("price")[0].innerText);
+                        let item2 = Number(list[j + 1].getElementsByClassName("price")[0].innerText);
+                        if (item1 < item2) {
+                            list[i].parentNode.insertBefore(list[j + 1], list[j]);
+                            swapped = true;
+                        }
+                        break;
+                    // sort KMs low to high
+                    case 3:
+                        let item1 = Number(list[j].getElementsByClassName("KMs")[0].innerText.replace(" KM", ""));
+                        let item2 = Number(list[j + 1].getElementsByClassName("KMs")[0].innerText.replace(" KM", ""));
+                        if (item1 > item2) {
+                            list[i].parentNode.insertBefore(list[j + 1], list[j]);
+                            swapped = true;
+                        }
+                        break;
+                    // sort KMs high to low
+                    case 4:
+                        let item1 = Number(list[j].getElementsByClassName("KMs")[0].innerText.replace(" KM", ""));
+                        let item2 = Number(list[j + 1].getElementsByClassName("KMs")[0].innerText.replace(" KM", ""));
+                        if (item1 < item2) {
+                            list[i].parentNode.insertBefore(list[j + 1], list[j]);
+                            swapped = true;
+                        }
+                        break;
+                }
+            }
+
+            if (swapped == false)
+                break;
+        }
+    }
+
+</script>

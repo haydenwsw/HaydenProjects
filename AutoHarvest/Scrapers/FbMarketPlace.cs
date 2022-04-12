@@ -27,8 +27,12 @@ namespace AutoHarvest.Scrapers
             // Initializing the html doc
             HtmlDocument htmlDocument = new HtmlDocument();
 
+            // format the price range input field
+            string minPrice = filterOptions.PriceMin == "" ? filterOptions.PriceMin : $"&minPrice={filterOptions.PriceMin}";
+            string maxPrice = filterOptions.PriceMax == "" ? filterOptions.PriceMax : $"&maxPrice={filterOptions.PriceMax}";
+
             // get the HTML doc of website
-            string url = $"{site}sydney/search?sortBy={sort[filterOptions.SortType]}{trans[filterOptions.TransType]}&query={filterOptions.SearchTerm}&category_id=vehicles&exact=false";
+            string url = $"{site}sydney/search?sortBy={sort[filterOptions.SortType]}{minPrice}{maxPrice}{trans[filterOptions.TransType]}&query={filterOptions.SearchTerm}&category_id=vehicles&exact=false";
             string html = await GetHtmlAsync(url);
 
             // Load HTML doc

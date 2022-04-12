@@ -16,6 +16,7 @@ namespace AutoHarvest.Scrapers
         private const string site = "https://www.carsales.com.au/";
         private static readonly string[] SortType = { "~Price", "Price", "LastUpdated", "~Odometer", "Odometer" };
         private static readonly string[] TransType = { "", "._.GenericGearType.Manual", "._.GenericGearType.Automatic" };
+        private const string priceRangeText = "._.Price.range({0}..{1})";
 
         // webscrape ebay for all the listings
         public static async Task<List<Car>> ScrapeCarsales(Func<string, Task<string>> GetHtmlAsync, FilterOptions filterOptions, int page)
@@ -23,8 +24,11 @@ namespace AutoHarvest.Scrapers
             // Initializing the html doc
             HtmlDocument htmlDocument = new HtmlDocument();
 
+            // format the price range input field
+            string priceRange = filterOptions.PriceMin == "" && filterOptions.PriceMax == "" ? "" : string.Format(priceRangeText, filterOptions.PriceMin, filterOptions.PriceMax);
+
             // get the HTML doc of website
-            string url = $"{site}/cars/?sort={SortType[filterOptions.SortType]}&q=(And.Service.CARSALES._.CarAll.keyword({filterOptions.SearchTerm})._.State.New South Wales{TransType[filterOptions.TransType]}.)&offset={(page - 1) * 12}";
+            string url = $"{site}/cars/?sort={SortType[filterOptions.SortType]}&q=(And.Service.CARSALES._.CarAll.keyword({filterOptions.SearchTerm})._.State.New South Wales{TransType[filterOptions.TransType]}{priceRange}.)&offset={(page - 1) * 12}";
             string html = await GetHtmlAsync(url);
 
             // Load HTML doc

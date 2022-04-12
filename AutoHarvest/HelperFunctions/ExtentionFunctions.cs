@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Text.RegularExpressions;
 
 namespace AutoHarvest.HelperFunctions
 {
@@ -41,6 +42,37 @@ namespace AutoHarvest.HelperFunctions
             }
 
             return number;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="str"></param>
+        /// <returns></returns>
+        public static int ToInt2(this string str)
+        {
+            if (str == null)
+                return -1;
+
+            string nums = Regex.Replace(str, @"[^\d]", "");
+
+            if (nums == "")
+                return -1;
+
+            return int.Parse(nums);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="str"></param>
+        /// <returns></returns>
+        public static string LeaveOnlyNumbers(this string str)
+        {
+            if (str == null)
+                return "";
+
+            return Regex.Replace(str, @"[^\d]", "");
         }
     }
 }

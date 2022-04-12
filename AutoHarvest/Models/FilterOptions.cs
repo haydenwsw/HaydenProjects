@@ -26,12 +26,16 @@ namespace AutoHarvest.Models
         public string SearchTerm { get; private set; }
         public int SortType { get; private set; }
         public int TransType { get; private set; }
+        public string PriceMin { get; private set; }
+        public string PriceMax { get; private set; }
 
-        public FilterOptions(string searchterm, int sorttype, int transtype)
+        public FilterOptions(string searchterm, int sorttype, int transtype, string pricemin, string pricemax)
         {
             SearchTerm = searchterm;
             SortType = sorttype;
             TransType = transtype;
+            PriceMin = pricemin;
+            PriceMax = pricemax;
         }
     }
 

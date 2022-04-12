@@ -16,7 +16,7 @@ namespace AutoHarvest.Singleton
 
             { "14-02", "Valentine's Day" },
 
-            { "07-03", "Happy Birthday Croucher" },
+            { "14-03", "𝛑 Day" },
 
             { "17-04", "Happy Easter" },
 
@@ -32,7 +32,7 @@ namespace AutoHarvest.Singleton
 
             { "10-09", "Happy Birthday NiB" },
 
-            { "10-31", "Happy Halloween" },
+            { "31-10", "Happy Halloween" },
 
             { "21-12", "Happy Birthday to the creator" },
 
