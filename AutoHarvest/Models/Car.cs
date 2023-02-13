@@ -12,7 +12,14 @@ namespace AutoHarvest.Models
         Engine
     }
 
-    public struct Car
+    public enum Source
+    {
+        Carsales,
+        FbMarketplace,
+        Gumtree
+    }
+
+    public class Car
     {
         public string Name { get; private set; }
         public string Link { get; private set; }
@@ -20,10 +27,10 @@ namespace AutoHarvest.Models
         public int Price { get; private set; }
         public int KMs { get; private set; }
         public string[] ExtraInfo { get; private set; }
-        public string Source { get; private set; }
+        public Source Source { get; private set; }
 
         // init
-        public Car(string name, string link, string imgurl, int price, int kms, string[] extrainfo, string source)
+        public Car(string name, string link, string imgurl, int price, int kms, Source source, string[] extrainfo = null)
         {
             Name = name;
             Link = link;

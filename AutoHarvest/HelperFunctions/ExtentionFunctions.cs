@@ -8,62 +8,51 @@ namespace AutoHarvest.HelperFunctions
 {
     public static class ExtentionFunctions
     {
-        // all the legal charaters for string to uint function
-        private static readonly HashSet<char> legalChars = "1234567890".ToHashSet();
-
         /// <summary>
-        /// returns all the numbers in the string as one number ignores all the other characters
+        /// turns a string to an int dosen't support negitive numbers
+        /// removes all characters after '.' and remove all non numbers
         /// </summary>
         /// <param name="str"></param>
         /// <returns></returns>
         public static int ToInt(this string str)
         {
-            int number = 0;
-            int count = 1;
-            bool dot = true;
-
-            // iterate backwards through the string and parse the numbers
-            for (int i = str.Length - 1; i > -1; i--)
-            {
-                // using a hash set for instant lookup times
-                if (legalChars.Contains(str[i]))
-                {
-                    int num = (int)str[i] - 48;
-                    number = num * count + number;
-                    count *= 10;
-                }
-                // gets rid of the decimal numbers and just incase there are more then one '.'
-                else if (str[i] == '.' && dot && count != 1)
-                {
-                    number = 0;
-                    count = 1;
-                    dot = false;
-                }
-            }
-
-            return number;
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="str"></param>
-        /// <returns></returns>
-        public static int ToInt2(this string str)
-        {
             if (str == null)
                 return -1;
 
-            string nums = Regex.Replace(str, @"[^\d]", "");
+            string nums = Regex.Replace(str, @"\..*$|[^\d]", "");
 
             if (nums == "")
-                return -1;
+                return 0;
 
             return int.Parse(nums);
         }
 
         /// <summary>
-        /// 
+        /// turns a string to a float dosen't support negitive numbers
+        /// </summary>
+        /// <param name="str"></param>
+        /// <returns></returns>
+        public static float ToFloat(this string str)
+        {
+            if (str == null)
+                return -1;
+
+            MatchCollection matches = Regex.Matches(str, @"^([^\.]*\.[^\.]*)");
+
+            string nums;
+            if (matches.Count == 0)
+                nums = Regex.Replace(str, @"[^\d\.]", "");
+            else
+                nums = Regex.Replace(matches.First().Value, @"[^\d\.]", "");
+
+            if (nums == "" || nums == ".")
+                return -1;
+
+            return float.Parse(nums);
+        }
+
+        /// <summary>
+        /// removes all non numbers and leaves only numbers
         /// </summary>
         /// <param name="str"></param>
         /// <returns></returns>

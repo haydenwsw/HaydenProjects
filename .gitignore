@@ -16,8 +16,9 @@
 # Mono auto generated files
 mono_crash.*
 
-#CEF Sharp cache
+# CEF Sharp cache
 AutoHarvest/GPUCache/
+AutoHarvest/DawnCache/
 
 # Build results
 [Dd]ebug/

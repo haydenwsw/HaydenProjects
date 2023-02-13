@@ -9,18 +9,13 @@ using CefSharp.OffScreen;
 
 namespace AutoHarvest.Singleton
 {
+    /// <summary>
+    /// Headless browser used the load html from ticky websites TODO: tab pooling
+    /// </summary>
     public class CefSharpHeadless
     {
-        /// <summary>
-        /// The request context
-        /// </summary>
+        // The request context
         private RequestContext RequestContext { get; set; }
-
-        // chromium does not manage timeouts, so we'll implement one
-        private readonly ManualResetEvent manualResetEvent = new ManualResetEvent(false);
-
-        // the page that the links are loaded on
-        private readonly ChromiumWebBrowser Page;
 
         public CefSharpHeadless()
         {
@@ -37,34 +32,47 @@ namespace AutoHarvest.Singleton
             Cef.Initialize(settings, performDependencyCheck: true, browserProcessHandler: null);
 
             RequestContext = new RequestContext();
-
-            // create a new page and wait for Initializion
-            Page = new ChromiumWebBrowser("", null, RequestContext);
-            SpinWait.SpinUntil(() => Page.IsBrowserInitialized);
         }
 
         /// <summary>
-        /// Open the given url
+        /// Creates an empty tab
+        /// </summary>
+        /// <returns></returns>
+        public ChromiumWebBrowser CreateNewTab()
+        {
+            ChromiumWebBrowser tab = new ChromiumWebBrowser("", null, RequestContext);
+            SpinWait.SpinUntil(() => tab.IsBrowserInitialized);
+
+            return tab;
+        }
+
+        /// <summary>
+        /// Gets the html from a url
         /// </summary>
         /// <param name="url">the url</param>
-        /// <returns></returns>
-        public Task<string> GetHtmlAsync(string url)
+        /// <returns>the html</returns>
+        public static Task<string> GetHtmlAsybc(ChromiumWebBrowser Tab, string url)
         {
+            // chromium does not manage timeouts, so we'll implement one
+            ManualResetEvent manualResetEventt = new ManualResetEvent(false);
+
             try
             {
-                Page.LoadingStateChanged += PageLoadingStateChanged;
-                if (Page.IsBrowserInitialized)
+                Tab.LoadingStateChanged += PageLoadingStateChanged;
+                if (Tab.IsBrowserInitialized)
                 {
-                    Page.Load(url);
+                    Tab.Load(url);
 
                     // create a 10 sec timeout 
-                    bool isSignalled = manualResetEvent.WaitOne(TimeSpan.FromSeconds(10));
-                    manualResetEvent.Reset();
+                    bool isSignalled = manualResetEventt.WaitOne(TimeSpan.FromSeconds(8));
+                    manualResetEventt.Reset();
 
                     // As the request may actually get an answer, we'll force stop when the timeout is passed
                     if (!isSignalled)
                     {
-                        Page.Stop();
+                        Tab.Stop();
+                        Tab.LoadingStateChanged -= PageLoadingStateChanged;
+                        throw new TimeoutException("The request has exceeded the 8 second timeout rule.");
                     }
                 }
             }
@@ -72,26 +80,23 @@ namespace AutoHarvest.Singleton
             {
                 // happens on the manualResetEvent.Reset(); when a cancelation token has disposed the context
             }
-            Page.LoadingStateChanged -= PageLoadingStateChanged;
+
+            Tab.LoadingStateChanged -= PageLoadingStateChanged;
 
             // get the html
-            return Page.GetBrowser().GetFrame("").GetSourceAsync();
-        }
+            return Tab.GetBrowser().GetFrame("").GetSourceAsync();
 
-        /// <summary>
-        /// Manage the IsLoading parameter
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void PageLoadingStateChanged(object sender, LoadingStateChangedEventArgs e)
-        {
-            // Check to see if loading is complete - this event is called twice, one when loading starts
-            // second time when it's finished
-            if (!e.IsLoading)
+            // Manage the IsLoading parameter
+            void PageLoadingStateChanged(object sender, LoadingStateChangedEventArgs e)
             {
-                manualResetEvent.Set();
-            }
+                // Check to see if loading is complete - this event is called twice, one when loading starts
+                // second time when it's finished
+                if (!e.IsLoading)
+                {
+                    manualResetEventt.Set();
+                }
 
+            }
         }
     }
 }

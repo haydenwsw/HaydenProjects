@@ -10,38 +10,8 @@ namespace AutoHarvest.Singleton
     /// </summary>
     public class Events
     {
-        private readonly Dictionary<string, string> Dates = new Dictionary<string, string>
-        {
-            { "01-01", "Happy New Year" },
-
-            { "14-02", "Valentine's Day" },
-
-            { "14-03", "𝛑 Day" },
-
-            { "17-04", "Happy Easter" },
-
-            { "20-04", "Blaze it" },
-
-            { "09-05", "Mother's Day" },
-
-            { "13-05", "Happy Birthday Gibbs" },
-
-            { "01-06", "Happy Birthday Alex" },
-
-            { "20-06", "Father's Day" },
-
-            { "10-09", "Happy Birthday NiB" },
-
-            { "31-10", "Happy Halloween" },
-
-            { "21-12", "Happy Birthday to the creator" },
-
-            { "24-12", "Christmas Eve!" },
-
-            { "25-12", "Marry Christmas" },
-
-            { "31-12", "New Years Eve!" }
-        };
+        // the total amount of the times the privacy page has been visited
+        public long TimesVisited = 0;
 
         // gets the title based on the event on that day
         public string GetTitle()
@@ -50,10 +20,56 @@ namespace AutoHarvest.Singleton
             string today = DateTime.Today.ToString("dd-MM");
 
             // look it up
-            if (Dates.TryGetValue(today, out string title))
-                return title;
-            else
-                return "Auto Harvest";
+            switch (today)
+            {
+                case "01-01":
+                    return $"Happy New Year {DateTime.Today.ToString("yyyy")}";
+
+                case "14-02":
+                    return "Valentine's Day";
+
+                case "14-03":
+                    return "𝛑 Day";
+
+                case "17-04":
+                    return "Happy Easter";
+
+                case "20-04":
+                    return "Blaze it";
+
+                case "09-05":
+                    return "Mother's Day";
+
+                case "13-05":
+                    return "Happy Birthday Gibbs";
+
+                case "01-06":
+                    return "Happy Birthday Alex";
+
+                case "20-06":
+                    return "Father's Day";
+
+                case "10-09":
+                    return "Happy Birthday NiB";
+
+                case "31-10":
+                    return "Happy Halloween";
+
+                case "21-12":
+                    return "Happy Birthday to the creator";
+
+                case "24-12":
+                    return "Christmas Eve!";
+
+                case "25-12":
+                    return "Marry Christmas";
+
+                case "31-12":
+                    return "New Years Eve!";
+
+                default:
+                    return "Car Finder";
+            }
         }
     }
 }

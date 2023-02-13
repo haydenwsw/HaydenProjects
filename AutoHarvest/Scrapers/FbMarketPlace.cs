@@ -6,78 +6,91 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using AutoHarvest.Singleton;
+using CefSharp.OffScreen;
+using AutoHarvest.Pages;
+using Microsoft.Extensions.Logging;
 
 namespace AutoHarvest.Scrapers
 {
     // the class that webscrapes facebook.com/marketplace
-    public static class FbMarketplace
+    public class FbMarketplace
     {
         // the urls for scraping
-        private const string site = "https://www.facebook.com/marketplace/";
-        private static readonly string[] trans = { "", "&transmissionType=manual", "&transmissionType=automatic" };
-        private static readonly string[] sort = { "price_ascend", "price_descend", "best_match", "best_match", "best_match" };
+        private readonly string site = "https://www.facebook.com/marketplace/";
+        private readonly string[] trans = { "", "&transmissionType=manual", "&transmissionType=automatic" };
+        private readonly string[] sort = { "price_ascend", "price_descend", "", "", "" };
+
+        private readonly ILogger<FbMarketplace> Logger;
+
+        public FbMarketplace(ILogger<FbMarketplace> logger)
+        {
+            Logger = logger;
+        }
 
         // webscrape FbMarketplace for all the listings
-        public async static Task<List<Car>> ScrapeFbMarketplace(Func<string, Task<string>> GetHtmlAsync, FilterOptions filterOptions, int page)
+        public async Task<List<Car>> ScrapeFbMarketplace(ChromiumWebBrowser Tab, FilterOptions FilterOptions)
         {
-            // requres to save the page per user and activate js
-            if (page > 1)
-                return new List<Car>();
-            
-            // Initializing the html doc
-            HtmlDocument htmlDocument = new HtmlDocument();
+            string url = null;
 
-            // format the price range input field
-            string minPrice = filterOptions.PriceMin == "" ? filterOptions.PriceMin : $"&minPrice={filterOptions.PriceMin}";
-            string maxPrice = filterOptions.PriceMax == "" ? filterOptions.PriceMax : $"&maxPrice={filterOptions.PriceMax}";
-
-            // get the HTML doc of website
-            string url = $"{site}sydney/search?sortBy={sort[filterOptions.SortType]}{minPrice}{maxPrice}{trans[filterOptions.TransType]}&query={filterOptions.SearchTerm}&category_id=vehicles&exact=false";
-            string html = await GetHtmlAsync(url);
-
-            // Load HTML doc
-            htmlDocument.LoadHtml(html);
-
-            // gets the longest string in the list
-            string script = htmlDocument.DocumentNode.Descendants("script").Aggregate("", (max, cur) => max.Length > cur.InnerText.Length ? max : cur.InnerText);
-
-            // arrays to find and store the data, 0: url, 1: imgUrl, 2: price, 3: title, 4: kms
-            string[] keyWords = { "GroupCommerceProductItem\",\"id\":", "image\":{\"uri\":", "amount\":\"", "listing_title\":", "subtitle\":" };
-            string[] texts = { "", "", "", "", "" };
-
-            var carItems = new List<Car>();
-
-            // exstract the usefull text from the script
-            int idx = 0;
-            while (idx != -1)
+            try
             {
-                for (int i = 0; i < keyWords.Length; i++)
+                // requres to save the page per user and activate js a.k.a some bs
+                if (FilterOptions.PageNumber > 1)
+                    return new List<Car>();
+
+                // Initializing the html doc
+                HtmlDocument htmlDocument = new HtmlDocument();
+
+                // format the price range input field
+                string minPrice = FilterOptions.PriceMin == "" ? FilterOptions.PriceMin : $"&minPrice={FilterOptions.PriceMin}";
+                string maxPrice = FilterOptions.PriceMax == "" ? FilterOptions.PriceMax : $"&maxPrice={FilterOptions.PriceMax}";
+
+                // get the HTML doc of website
+                url = $"{site}sydney/search?query={FilterOptions.SearchTerm}&sortBy={sort[FilterOptions.SortType]}{minPrice}{maxPrice}{trans[FilterOptions.TransType]}&category_id=vehicles&exact=false";
+                string html = await CefSharpHeadless.GetHtmlAsybc(Tab, url);
+
+                // Load HTML doc
+                htmlDocument.LoadHtml(html);
+
+                // gets the longest string in the list
+                string script = htmlDocument.DocumentNode.Descendants("script").Aggregate("", (max, cur) => max.Length > cur.InnerText.Length ? max : cur.InnerText);
+
+                // get the raw json from the script
+                int idx = script.IndexOf("{\"__bbox");
+                string json = script.Substring(idx, script.Length - idx - 12); // hard code values for good luck
+
+                // deserialize into the model
+                FbMarketplaceJson fbMarketplaceModel = FbMarketplaceJson.FromJson(json);
+                var items = fbMarketplaceModel.Bbox.Result.Data.MarketplaceSearch.FeedUnits.Edges;
+
+                // if search comes up empty return
+                if (items.Length == 0)
+                    return new List<Car>();
+
+                // add them to the list
+                List<Car> carItems = new List<Car>();
+                for (int i = 0; i < items.Length; i++)
                 {
-                    // find the next sub string in the string
-                    idx = script.IndexOf(keyWords[i], idx);
+                    var customSubTitle = items[i].Node.Listing.CustomSubTitlesWithRenderingFlags.FirstOrDefault();
 
-                    // if reach the end of the string return
-                    if (idx == -1)
-                        return carItems;
-
-                    // walk forwards through the string to construct the text
-                    idx += keyWords[i].Length;
-                    string text = "";
-                    while (script[idx + 1] != '"')
-                    {
-                        if (script[++idx] != '\\')
-                            text += script[idx];
-                    }
-
-                    // add the text to the array
-                    texts[i] = text;
+                    // add item
+                    carItems.Add(new Car(
+                        items[i].Node.Listing.MarketplaceListingTitle, // title
+                        $"{site}item/{items[i].Node.Listing.Id}", // link
+                        items[i].Node.Listing.PrimaryListingPhoto.Image.Uri.AbsoluteUri, // image
+                        items[i].Node.Listing.ListingPrice.FormattedAmount.ToInt(), // price
+                        customSubTitle == null ? 0 : (int)(customSubTitle.Subtitle.ToFloat() * 1000), // kms
+                        Source.FbMarketplace
+                        ));
                 }
 
-                // add them all to the list
-                carItems.Add(new Car(texts[3], site + "item/" + texts[0], texts[1], texts[2].ToInt(), texts[4].ToInt() * 1000, new string[0], "FbMarketplace"));
+                return carItems;
             }
-
-            return carItems;
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "FbMarketplace scraper has failed. FbMarketplaceUrl: {url}. FilterOptions: {FilterOptions}", url, FilterOptions);
+                return new List<Car>();
+            }
         }
     }
 }

@@ -1,56 +1,66 @@
 ﻿using AutoHarvest.Models;
+using AutoHarvest.Pages;
 using AutoHarvest.Scrapers;
 using AutoHarvest.Singleton;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace AutoHarvest.Scoped
+namespace AutoHarvest.Singleton
 {
     /// <summary>
-    /// Wrappes all the scrapers listings into one list a sort accordingly
+    /// Wrappes all the scrapers listings into one list and sorts accordingly
     /// all listings are from NSW area
     /// </summary>
     public class CarWrapper
     {
+        // the webscraper classes
+        private readonly Carsales Carsales;
+        private readonly FbMarketplace FbMarketplace;
+        private readonly Gumtree Gumtree;
+
         // headless browser for webscraping
         private readonly CefSharpHeadless HeadlessBrowser;
 
-        public CarWrapper(CefSharpHeadless headlessbrowser)
+        public CarWrapper(Carsales carsales, FbMarketplace fbmarketplace, Gumtree gumtree, CefSharpHeadless headlessbrowser)
         {
+            Carsales = carsales;
+            FbMarketplace = fbmarketplace;
+            Gumtree = gumtree;
             HeadlessBrowser = headlessbrowser;
         }
 
         // get all the car listing from the websties asynchronously
-        public async Task<List<Car>> getCarsAsync(FilterOptions filterOptions, Toggles toggles, int page)
+        public async Task<List<Car>> GetCarsAsync(FilterOptions FilterOptions)
         {
             // scrape carsales based on toggle
             Task<List<Car>> CarsalesCars;
-            if (toggles.ToggleCarsales)
-                CarsalesCars = Carsales.ScrapeCarsales(HeadlessBrowser.GetHtmlAsync, filterOptions, page);
+            if (FilterOptions.ToggleCarsales)
+                CarsalesCars = Carsales.ScrapeCarsales(HeadlessBrowser.CreateNewTab(), FilterOptions);
             else
                 CarsalesCars = Task.FromResult(new List<Car>());
 
             // scrape facebook marketplace based on toggle
             Task<List<Car>> FbMarketplaceCars;
-            if (toggles.ToggleFBMarketplace)
-                FbMarketplaceCars = FbMarketplace.ScrapeFbMarketplace(HeadlessBrowser.GetHtmlAsync, filterOptions, page);
+            if (FilterOptions.ToggleFBMarketplace)
+                FbMarketplaceCars = FbMarketplace.ScrapeFbMarketplace(HeadlessBrowser.CreateNewTab(), FilterOptions);
             else
                 FbMarketplaceCars = Task.FromResult(new List<Car>());
 
             // scrape gumtree based on toggle
             Task<List<Car>> GumtreeCars;
-            if (toggles.ToggleGumtree)
-                GumtreeCars = Gumtree.ScrapeGumtree(filterOptions, page);
+            if (FilterOptions.ToggleGumtree)
+                GumtreeCars = Gumtree.ScrapeGumtree(FilterOptions);
             else
                 GumtreeCars = Task.FromResult(new List<Car>());
 
-            // await all the taks in parallel at once
-            await Task.WhenAll(FbMarketplaceCars, CarsalesCars, GumtreeCars);
+            // await all the tasks in parallel at once
+            await Task.WhenAll(CarsalesCars, FbMarketplaceCars, GumtreeCars);
 
             // create the list to the lenght of all the lists
-            var Cars = new List<Car>(CarsalesCars.Result.Count + GumtreeCars.Result.Count + FbMarketplaceCars.Result.Count);
+            var Cars = new List<Car>(CarsalesCars.Result.Count + FbMarketplaceCars.Result.Count + GumtreeCars.Result.Count);
 
             // combine all the lists
             Cars.AddRange(CarsalesCars.Result);
@@ -58,13 +68,13 @@ namespace AutoHarvest.Scoped
             Cars.AddRange(GumtreeCars.Result);
 
             // sort the list
-            Sort(ref Cars, filterOptions.SortType);
+            Sort(ref Cars, FilterOptions.SortType);
 
             return Cars;
         }
 
         // sorts the list
-        private void Sort(ref List<Car> Cars, int SortNum)
+        private static void Sort(ref List<Car> Cars, int SortNum)
         {
             switch (SortNum)
             {

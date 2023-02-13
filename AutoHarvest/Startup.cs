@@ -8,8 +8,9 @@ using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using AutoHarvest.Scoped;
 using AutoHarvest.Singleton;
+using AspNetCoreRateLimit;
+using AutoHarvest.Scrapers;
 
 namespace AutoHarvest
 {
@@ -27,8 +28,13 @@ namespace AutoHarvest
         {
             services.AddRazorPages();
 
+            // add all the web scrapers
+            services.AddSingleton<Carsales>();
+            services.AddSingleton<FbMarketplace>();
+            services.AddSingleton<Gumtree>();
+
             // add the scraper wrapper class
-            services.AddScoped<CarWrapper>();
+            services.AddSingleton<CarWrapper>();
 
             // add the headless browser
             services.AddSingleton<CefSharpHeadless>();
@@ -38,6 +44,34 @@ namespace AutoHarvest
 
             // add the event class
             services.AddSingleton<Events>();
+
+            services.AddMemoryCache();
+
+            // add a rate limit so users can't send to many requests
+            var rateLimitRules = new List<RateLimitRule>
+            {
+                new RateLimitRule
+                {
+                    Endpoint = "*:/",
+                    Limit = 3,
+                    Period = "1s"
+                }
+            };
+            services.Configure<IpRateLimitOptions>(opt =>
+            {
+                opt.EnableEndpointRateLimiting = true;
+                opt.GeneralRules = rateLimitRules;
+                opt.QuotaExceededResponse = new QuotaExceededResponse
+                {
+                    Content = "{{ \"message\": \"Whoa! Calm down, cowboy!\", \"details\": \"Quota exceeded. Maximum allowed: {0} per {1}. Please try again in {2} second(s).\" }}",
+                    ContentType = "application/json",
+                    StatusCode = 429
+                };
+            });
+            services.AddInMemoryRateLimiting();
+
+            // configuration (resolvers, counter key builders)
+            services.AddSingleton<IRateLimitConfiguration, RateLimitConfiguration>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -56,6 +90,9 @@ namespace AutoHarvest
 
             app.UseHttpsRedirection();
             app.UseStaticFiles();
+
+            app.UseResponseCaching();
+            app.UseIpRateLimiting();
 
             app.UseRouting();
 

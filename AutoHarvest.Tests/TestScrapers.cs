@@ -12,8 +12,8 @@ namespace AutoHarvest.Tests
         [InlineData("celica", 1, (int)SortTypes.PriceLowtoHigh, (int)TransTypes.All)]
         public async void ScrapeGumtree(string search, int page, int sortType, int transType)
         {
-            FilterOptions filterOptions = new FilterOptions(sortType, transType);
-            List<Car> GumtreeCars = await Gumtree.ScrapeGumtree(search, page, filterOptions);
+            FilterOptions filterOptions = new FilterOptions(search, sortType, transType, "", "", true, true, true, page);
+            List<Car> GumtreeCars = await Gumtree.ScrapeGumtree(filterOptions);
 
             Assert.NotEmpty(GumtreeCars);
         }

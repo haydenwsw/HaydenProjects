@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
+using AutoHarvest.HelperFunctions;
 
 namespace AutoHarvest.Models
 {
@@ -21,35 +23,45 @@ namespace AutoHarvest.Models
         Automatic
     }
 
-    public struct FilterOptions
+    public class FilterOptions
     {
+        [MaxLength(100)]
         public string SearchTerm { get; private set; }
+
         public int SortType { get; private set; }
+
         public int TransType { get; private set; }
+
+        [MaxLength(10)]
         public string PriceMin { get; private set; }
+
+        [MaxLength(10)]
         public string PriceMax { get; private set; }
 
-        public FilterOptions(string searchterm, int sorttype, int transtype, string pricemin, string pricemax)
+        public bool ToggleCarsales { get; private set; }
+
+        public bool ToggleFBMarketplace { get; private set; }
+
+        public bool ToggleGumtree { get; private set; }
+
+        public int PageNumber { get; private set; }
+
+        public FilterOptions(string searchterm, int sorttype, int transtype, string pricemin, string pricemax, bool togglecarsales, bool togglefbmarketplace, bool togglegumtree, int pagenumber)
         {
             SearchTerm = searchterm;
-            SortType = sorttype;
-            TransType = transtype;
-            PriceMin = pricemin;
-            PriceMax = pricemax;
-        }
-    }
-
-    public struct Toggles
-    {
-        public bool ToggleCarsales { get; set; }
-        public bool ToggleFBMarketplace { get; set; }
-        public bool ToggleGumtree { get; set; }
-
-        public Toggles(bool togglecarsales, bool toggleFBmarketplace, bool togglegumtree)
-        {
+            SortType = Math.Clamp(sorttype, 0, 4);
+            TransType = Math.Clamp(transtype, 0, 2);
+            PriceMin = pricemin.LeaveOnlyNumbers();
+            PriceMax = pricemax.LeaveOnlyNumbers();
             ToggleCarsales = togglecarsales;
-            ToggleFBMarketplace = toggleFBmarketplace;
+            ToggleFBMarketplace = togglefbmarketplace;
             ToggleGumtree = togglegumtree;
+            PageNumber = Math.Clamp(pagenumber, 1, 10);
+        }
+
+        public override string ToString()
+        {
+            return $"Search: {SearchTerm}, Sort: {(SortTypes)SortType}, Trans: {(TransTypes)TransType}, Min: {PriceMin}, Max: {PriceMax}, Carsales: {ToggleCarsales}, FbMarketplace: {ToggleFBMarketplace}, Gumtree: {ToggleGumtree}, Page: {PageNumber}";
         }
     }
 }

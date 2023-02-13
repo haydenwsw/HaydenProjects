@@ -3,83 +3,115 @@
 @{
     ViewData["Title"] = Model.Title;
 }
+@using AutoHarvest.Models
 
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+<link rel="stylesheet" href="~/css/FilterForm.css">
 
 <form method="get">
 
-    <table class="center">
+    <div class="card-6">
 
-        <tr>
-            <td>Keywords:</td>
-            <td>Sort:</td>
-            <td>Transmission:</td>
-            <td>PriceMin:</td>
-            <td>PriceMax:</td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td>Location:</td>
-        </tr>
+        <div class="card-body">
+            @*<div class="row-6 row-space">
+                <div class="col--2">
+                    <div class="input-group-1">
+                        <select class="input--style-1" name="Make" id="Make">
+                            <option value=0>Make</option>
+                            <option value=1>Toyota</option>
+                            <option value=2>Nissan</option>
+                            <option value=3>Honda</option>
+                            <option value=4>Subrau</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="col--2">
+                    <div class="input-group-1">
+                        <select class="input--style-1" name="Model" id="Model">
+                            <option value=0>Model</option>
+                            <option value=1>Celica</option>
+                            <option value=2>Camery</option>
+                            <option value=3>Coralla</option>
+                            <option value=4>Caldina</option>
+                        </select>
+                    </div>
+                </div>
+            </div>*@
+            <div class="row-6 row-space">
+                <div class="col--1">
+                    <div class="input-group-1">
+                        <input id="SearchTerm" class="input--style-1" type="text" name="Search" placeholder="Search" asp-for="Search" value=@Model.Search>
+                    </div>
+                </div>
+            </div>
+        </div>
 
-        <tr>
+        <div class="card-body">
+            <div class="row-6 row-space">
+                    <div class="input-group-1">
+                        <select class="input--style-1" asp-for="Sort"
+                                onchange="sortList(document.getElementById('itemList').getElementsByClassName('carItem'), document.getElementById('selectSort').selectedIndex)">
+                            <option value=0>Price Low to High</option>
+                            <option value=1>Price High to Low</option>
+                            <option value=2>Unsorted</option>
+                            <option value=3>Kilometres Low to High</option>
+                            <option value=4>Kilometres High to Low</option>
+                        </select>
+                    </div>
+                    <div class="input-group-1">
+                        <select class="input--style-1" asp-for="Trans">
+                            <option value=0>All</option>
+                            <option value=1>Manual</option>
+                            <option value=2>Automatic</option>
+                        </select>
+                    </div>
+                    <div class="input-group-1">
+                        <select class="input--style-1" id="Location">
+                            <option value=0>NSW</option>
+                        </select>
+                    </div>
+            </div>
+            <div class="row-6 row-space">
+                <div class="col--2">
+                    <div class="input-group-1">
+                        <input class="input--style-1" type="text" placeholder="Min" asp-for="Min" value=@Model.Min onkeydown="return (!(event.keyCode>=65) && event.keyCode!=32);">
+                    </div>
+                </div>
+                <div class="col--2">
+                    <div class="input-group-1">
+                        <input class="input--style-1" type="text" placeholder="Max" asp-for="Max" value=@Model.Max onkeydown="return (!(event.keyCode>=65) && event.keyCode!=32);">
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card-body">
+            <div class="row-6 row-space">
+                    <div class="input-group-1">
+                        <input type="checkbox" id="cb1" asp-for="Carsales" />
+                        <label for="cb1"><img class="cs" src=@Model.GetLogo(Source.Carsales).LogoUrl asp-append-version="true" alt="CS" width="174" height="64" /></label>
+                    </div>
+                    <div class="input-group-1">
+                        <input type="checkbox" id="cb2" asp-for="FbMarketplace" />
+                        <label for="cb2"><img class="mp" src=@Model.GetLogo(Source.FbMarketplace).LogoUrl asp-append-version="true" alt="MP" width="64" height="64" /></label>
+                    </div>
+                    <div class="input-group-1">
+                        <input type="checkbox" id="cb3" asp-for="Gumtree" />
+                        <label for="cb3"><img class="gt" src=@Model.GetLogo(Source.Gumtree).LogoUrl asp-append-version="true" alt="GT" width="90" height="64" /></label>
+                    </div>
+            </div>
+        </div>
 
-            <td>
-                <input id="SearchTerm" class="form-control" asp-for="SearchTerm" value=@Model.SearchTerm />
-            </td>
+        <div class="card-body">
+            <div class="row-6 row-space">
+                <div class="col--1">
+                    <div class="input-group-1">
+                        <button class="btn-submit" type="submit">search</button>
+                    </div>
+                </div>
+            </div>
+        </div>
 
-            <td>
-                <select class="selectBoxSort" id="selectSort" onchange="sortList()" asp-for="SortType">
-                    <option value=0>Price Low to High</option>
-                    <option value=1>Price High to Low</option>
-                    <option value=2>Unsorted</option>
-                    <option value=3>Kilometres Low to High</option>
-                    <option value=4>Kilometres High to Low</option>
-                </select>
-            </td>
-
-            <td>
-                <select class="selectBoxTrans" id="selectTrans" asp-for="TransType">
-                    <option value=0>All</option>
-                    <option value=1>Manual</option>
-                    <option value=2>Automatic</option>
-                </select>
-            </td>
-
-            <td>
-                <input id="PriceMin" class="form-control" asp-for="PriceMin" value=@Model.PriceMin />
-            </td>
-
-            <td>
-                <input id="PriceMax" class="form-control" asp-for="PriceMax" value=@Model.PriceMax />
-            </td>
-
-            <td>
-                <input type="checkbox" id="cb1" asp-for="ToggleCarsales" />
-                <label for="cb1"><img src=@Model.getLogo("Carsales").LogoUrl asp-append-version="true" alt="CS" width="87" height="35" /></label>
-            </td>
-
-            <td>
-                <input type="checkbox" id="cb2" asp-for="ToggleFBMarketplace" />
-                <label for="cb2"><img src=@Model.getLogo("FbMarketplace").LogoUrl asp-append-version="true" alt="MP" width="35" height="35" /></label>
-            </td>
-
-            <td>
-                <input type="checkbox" id="cb3" asp-for="ToggleGumtree" />
-                <label for="cb3"><img src=@Model.getLogo("Gumtree").LogoUrl asp-append-version="true" alt="GT" width="47" height="35" /></label>
-            </td>
-
-            <td>
-                <select class="selectBoxLocation" id="selectLocation" disabled style="color: gray;">
-                    <option value=0>NSW</option>
-                </select>
-            </td>
-
-            <td>
-                <button type="submit" class="btn btn-primary">Search</button>
-            </td>
-        </tr>
-    </table>
+    </div>
 
 </form>
 
@@ -89,22 +121,25 @@
         {
             <li class="carItem">
                 <a href="@car.Link" class="list-group-item">
-                    <img src="@car.ImgUrl" alt="This listing has no image" width="200" height="200">
+                    <img class="listImage" src="@car.ImgUrl" alt="This listing has no image">
                     <h3>@car.Name</h3>
                     <h4><i class="fa fa-usd"></i> <i class="price">@car.Price</i></h4>
 
                     <ul class="itemText">
                         <li style="display: inline;"> <i class="fa fa-line-chart"></i> <i class="KMs">@car.KMs KM</i></li>
-                        @for (int i = 0; i < car.ExtraInfo.Length; i++)
+                        @if (car.ExtraInfo != null)
                         {
-                            @if (car.ExtraInfo[i] != null)
+                            @for (int i = 0; i < car.ExtraInfo.Length; i++)
                             {
-                                <li class="extraInfo"> <i class="@IndexModel.Icons[i]"></i> <i>@car.ExtraInfo[i]</i></li>
+                                @if (car.ExtraInfo[i] != null)
+                                {
+                                    <li class="extraInfo"> <i class="@IndexModel.Icons[i]"></i> <i>@car.ExtraInfo[i]</i></li>
+                                }
                             }
                         }
 
                     </ul>
-                    @{ var logo = Model.getLogo(car.Source); }
+                    @{ var logo = Model.GetLogo(car.Source); }
                     <img src=@logo.LogoUrl asp-append-version="true" alt="logo" width=@logo.LogoWidth height=@logo.LogoHeight />
 
                 </a>
@@ -118,82 +153,20 @@
         @if (Model.ShowPrevious)
         {
             <li class="page-item">
-                <a asp-page="" asp-route-SearchTerm="@Model.SearchTerm" asp-route-SortType="@Model.SortType"
-                   asp-route-TransType="@Model.TransType" asp-route-PriceMin="@Model.PriceMin" asp-route-PriceMax="@Model.PriceMax"
-                   asp-route-ToggleCarsales="@Model.ToggleCarsales" asp-route-ToggleFBMarketplace="@Model.ToggleFBMarketplace"
-                   asp-route-ToggleGumtree="@Model.ToggleGumtree" asp-route-PageNum="@(Model.PageNum - 1)" class="page-link">Previous Page</a>
+                <a asp-page="" asp-route-SearchTerm="@Model.Search" asp-route-SortType="@Model.Sort"
+                   asp-route-TransType="@Model.Trans" asp-route-PriceMin="@Model.Min" asp-route-PriceMax="@Model.Max"
+                   asp-route-ToggleCarsales="@Model.Carsales" asp-route-ToggleFBMarketplace="@Model.FbMarketplace"
+                   asp-route-ToggleGumtree="@Model.Gumtree" asp-route-PageNum="@(Model.PageNum - 1)" class="page-link">Previous Page</a>
             </li>
         }
         @if (Model.ShowNext)
         {
             <li class="page-item">
-                <a asp-page="" asp-route-SearchTerm="@Model.SearchTerm" asp-route-SortType="@Model.SortType"
-                   asp-route-TransType="@Model.TransType" asp-route-PriceMin="@Model.PriceMin" asp-route-PriceMax="@Model.PriceMax"
-                   asp-route-ToggleCarsales="@Model.ToggleCarsales" asp-route-ToggleFBMarketplace="@Model.ToggleFBMarketplace"
-                   asp-route-ToggleGumtree="@Model.ToggleGumtree" asp-route-PageNum="@(Model.PageNum + 1)" class="page-link">Next Page</a>
+                <a asp-page="" asp-route-SearchTerm="@Model.Search" asp-route-SortType="@Model.Sort"
+                   asp-route-TransType="@Model.Trans" asp-route-PriceMin="@Model.Min" asp-route-PriceMax="@Model.Max"
+                   asp-route-ToggleCarsales="@Model.Carsales" asp-route-ToggleFBMarketplace="@Model.FbMarketplace"
+                   asp-route-ToggleGumtree="@Model.Gumtree" asp-route-PageNum="@(Model.PageNum + 1)" class="page-link">Next Page</a>
             </li>
         }
     </ul>
 </div>
-
-<script>
-
-    function sortList() {
-
-        let list = document.getElementById("itemList").getElementsByClassName("carItem");
-        let n = list.length;
-        let idx = document.getElementById("selectSort").selectedIndex;
-
-        let i, j;
-        let swapped;
-        for (i = 0; i < n - 1; i++) {
-
-            swapped = false;
-            for (j = 0; j < n - i - 1; j++) {
-
-                switch (idx) {
-                    // sort price low to high
-                    case 0:
-                        let item1 = Number(list[j].getElementsByClassName("price")[0].innerText);
-                        let item2 = Number(list[j + 1].getElementsByClassName("price")[0].innerText);
-                        if (item1 > item2) {
-                            list[i].parentNode.insertBefore(list[j + 1], list[j]);
-                            swapped = true;
-                        }
-                        break;
-                    // sort price high to low
-                    case 1:
-                        let item1 = Number(list[j].getElementsByClassName("price")[0].innerText);
-                        let item2 = Number(list[j + 1].getElementsByClassName("price")[0].innerText);
-                        if (item1 < item2) {
-                            list[i].parentNode.insertBefore(list[j + 1], list[j]);
-                            swapped = true;
-                        }
-                        break;
-                    // sort KMs low to high
-                    case 3:
-                        let item1 = Number(list[j].getElementsByClassName("KMs")[0].innerText.replace(" KM", ""));
-                        let item2 = Number(list[j + 1].getElementsByClassName("KMs")[0].innerText.replace(" KM", ""));
-                        if (item1 > item2) {
-                            list[i].parentNode.insertBefore(list[j + 1], list[j]);
-                            swapped = true;
-                        }
-                        break;
-                    // sort KMs high to low
-                    case 4:
-                        let item1 = Number(list[j].getElementsByClassName("KMs")[0].innerText.replace(" KM", ""));
-                        let item2 = Number(list[j + 1].getElementsByClassName("KMs")[0].innerText.replace(" KM", ""));
-                        if (item1 < item2) {
-                            list[i].parentNode.insertBefore(list[j + 1], list[j]);
-                            swapped = true;
-                        }
-                        break;
-                }
-            }
-
-            if (swapped == false)
-                break;
-        }
-    }
-
-</script>

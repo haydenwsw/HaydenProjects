@@ -11,15 +11,15 @@ namespace AutoHarvest.Singleton
     /// </summary>
     public class LogoLookup
     {
-        private readonly Dictionary<string, Logo> Logos = new Dictionary<string, Logo>
+        private readonly Dictionary<Source, Logo> Logos = new Dictionary<Source, Logo>
         {
-            { "Carsales",  new Logo("~/logos/Carsales.png", "174", "64") },
-            { "FbMarketplace",  new Logo("~/logos/FbMarketplace.png", "64", "64") },
-            { "Gumtree",  new Logo("~/logos/Gumtree.jpg", "90", "64") }
+            { Source.Carsales,  new Logo("~/logos/Carsales.png", "174", "64") },
+            { Source.FbMarketplace,  new Logo("~/logos/FbMarketplace.png", "64", "64") },
+            { Source.Gumtree,  new Logo("~/logos/Gumtree.jpg", "90", "64") }
         };
 
         // get the logo of the listings website that is was scraped from
-        public Logo GetLogo(string source)
+        public Logo GetLogo(Source source)
         {
             Logos.TryGetValue(source, out Logo val);
             return val;

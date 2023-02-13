@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace AutoHarvest.Models
 {
-    public struct Logo
+    public class Logo
     {
         public string LogoUrl;
         public string LogoWidth;
