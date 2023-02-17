@@ -3,9 +3,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Text.RegularExpressions;
+using System.Net;
 
 namespace AutoHarvest.HelperFunctions
 {
+    /// <summary>
+    /// All extension functions (should change this to just string extentions)
+    /// </summary>
     public static class ExtentionFunctions
     {
         /// <summary>
@@ -62,6 +66,21 @@ namespace AutoHarvest.HelperFunctions
                 return "";
 
             return Regex.Replace(str, @"[^\d]", "");
+        }
+
+        /// <summary>
+        /// Converts a string that has been html encoded into a decoded string
+        /// </summary>
+        /// <param name="str"></param>
+        /// <returns></returns>
+        public static string HtmlDecode(this string str)
+        {
+            return WebUtility.HtmlDecode(str);
+        }
+
+        public static bool IsNull(this object obj)
+        {
+            return obj == null;
         }
     }
 }

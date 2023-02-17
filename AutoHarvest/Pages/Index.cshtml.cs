@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using AutoHarvest.Singleton;
+using AutoHarvest.Singletons;
 using AutoHarvest.HelperFunctions;
 using AutoHarvest.Models;
 using Microsoft.AspNetCore.Mvc;
@@ -78,7 +78,6 @@ namespace AutoHarvest.Pages
 
         private readonly ILogger<IndexModel> Logger;
 
-        // init
         public IndexModel(CarWrapper carwrapper, LogoLookup logoLookup, ILogger<IndexModel> logger, Events events)
         {
             CarWrapper = carwrapper;
@@ -96,11 +95,12 @@ namespace AutoHarvest.Pages
                 if (Search != null)
                 {
                     // log activity
-                    Logger.LogInformation("CarFinder: The user {ipaddress} has requested {url}", Request.HttpContext.Connection.RemoteIpAddress, Request.QueryString);
+                    Logger.LogInformation("CarFinder: {ipaddress} {url}", Request.HttpContext.Connection.RemoteIpAddress, Request.QueryString);
 
                     FilterOptions filterOptions = new FilterOptions(Search, Sort, Trans, Min, Max,
                         Carsales, FbMarketplace, Gumtree, PageNum);
 
+                    // get the car listings
                     Cars = await CarWrapper.GetCarsAsync(filterOptions);
                 }
             }

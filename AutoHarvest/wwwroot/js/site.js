@@ -1,62 +1,55 @@
-﻿// Please see documentation at https://docs.microsoft.com/aspnet/core/client-side/bundling-and-minification
-// for details on configuring this project to bundle and minify static web assets.
+﻿
+window.onload = (event) => {
 
-// Write your Javascript code.
+    let ul = document.getElementById("itemList")
 
-// only used for the index page also lags probably the worst function in the whole solution
-function sortList(list, idx) {
+    if (ul.childNodes.length > 1)
+        sortList(ul, document.getElementById('selectSort').selectedIndex)
+};
 
-    let n = list.length;
+// sorts the list
+function sortList(ul, idx) {
 
-    let i, j;
-    let swapped;
-    let item1, item2;
-    for (i = 0; i < n - 1; i++) {
+    var new_ul = ul.cloneNode(false);
+    var lis = [];
 
-        swapped = false;
-        for (j = 0; j < n - i - 1; j++) {
+    for (var i = ul.childNodes.length; i--;) {
+        if (ul.childNodes[i].nodeName === 'LI')
+            lis.push(ul.childNodes[i]);
+    }
 
-            switch (idx) {
-                // sort price low to high
-                case 0:
-                    item1 = Number(list[j].getElementsByClassName("price")[0].innerText);
-                    item2 = Number(list[j + 1].getElementsByClassName("price")[0].innerText);
-                    if (item1 > item2) {
-                        list[i].parentNode.insertBefore(list[j + 1], list[j]);
-                        swapped = true;
-                    }
-                    break;
-                // sort price high to low
-                case 1:
-                    item1 = Number(list[j].getElementsByClassName("price")[0].innerText);
-                    item2 = Number(list[j + 1].getElementsByClassName("price")[0].innerText);
-                    if (item1 < item2) {
-                        list[i].parentNode.insertBefore(list[j + 1], list[j]);
-                        swapped = true;
-                    }
-                    break;
-                // sort KMs low to high
-                case 3:
-                    item1 = Number(list[j].getElementsByClassName("KMs")[0].innerText.replace(" KM", ""));
-                    item2 = Number(list[j + 1].getElementsByClassName("KMs")[0].innerText.replace(" KM", ""));
-                    if (item1 > item2) {
-                        list[i].parentNode.insertBefore(list[j + 1], list[j]);
-                        swapped = true;
-                    }
-                    break;
-                // sort KMs high to low
-                case 4:
-                    item1 = Number(list[j].getElementsByClassName("KMs")[0].innerText.replace(" KM", ""));
-                    item2 = Number(list[j + 1].getElementsByClassName("KMs")[0].innerText.replace(" KM", ""));
-                    if (item1 < item2) {
-                        list[i].parentNode.insertBefore(list[j + 1], list[j]);
-                        swapped = true;
-                    }
-                    break;
-            }
-        }
+    switch (idx) {
 
-        if (swapped == false)
+        // sort price low to high
+        case 0:
+            lis.sort(function (a, b) {
+                return parseInt(a.getElementsByClassName("price")[0].innerText, 10) - parseInt(b.getElementsByClassName("price")[0].innerText, 10);
+            });
+            break;
+
+        // sort price high to low
+        case 1:
+            lis.sort(function (a, b) {
+                return parseInt(b.getElementsByClassName("price")[0].innerText, 10) - parseInt(a.getElementsByClassName("price")[0].innerText, 10);
+            });
+            break;
+
+        // sort KMs low to high
+        case 3:
+            lis.sort(function (a, b) {
+                return parseInt(a.getElementsByClassName("KMs")[0].innerText.replace(" KM", ""), 10) - parseInt(b.getElementsByClassName("KMs")[0].innerText.replace(" KM", ""), 10);
+            });
+            break;
+
+        // sort KMs high to low
+        case 4:
+            lis.sort(function (a, b) {
+                return parseInt(b.getElementsByClassName("KMs")[0].innerText.replace(" KM", ""), 10) - parseInt(a.getElementsByClassName("KMs")[0].innerText.replace(" KM", ""), 10);
+            });
             break;
     }
+
+    for (var i = 0; i < lis.length; i++)
+        new_ul.appendChild(lis[i]);
+    ul.parentNode.replaceChild(new_ul, ul);
 }

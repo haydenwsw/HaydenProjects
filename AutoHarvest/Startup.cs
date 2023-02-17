@@ -8,8 +8,9 @@ using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using AutoHarvest.Singleton;
+using Microsoft.AspNetCore.HttpOverrides;
 using AspNetCoreRateLimit;
+using AutoHarvest.Singletons;
 using AutoHarvest.Scrapers;
 
 namespace AutoHarvest
@@ -32,12 +33,13 @@ namespace AutoHarvest
             services.AddSingleton<Carsales>();
             services.AddSingleton<FbMarketplace>();
             services.AddSingleton<Gumtree>();
+            services.AddHttpClient();
+
+            // add the cookkeys haha
+            services.AddSingleton<Cookies>();
 
             // add the scraper wrapper class
             services.AddSingleton<CarWrapper>();
-
-            // add the headless browser
-            services.AddSingleton<CefSharpHeadless>();
 
             // add the LogoLookup class
             services.AddSingleton<LogoLookup>();
@@ -87,6 +89,12 @@ namespace AutoHarvest
                 // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
                 app.UseHsts();
             }
+
+            app.UseForwardedHeaders(new ForwardedHeadersOptions
+            {
+                ForwardedHeaders = ForwardedHeaders.XForwardedFor |
+                ForwardedHeaders.XForwardedProto
+            });
 
             app.UseHttpsRedirection();
             app.UseStaticFiles();

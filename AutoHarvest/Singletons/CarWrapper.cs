@@ -1,14 +1,13 @@
 ﻿using AutoHarvest.Models;
 using AutoHarvest.Pages;
 using AutoHarvest.Scrapers;
-using AutoHarvest.Singleton;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace AutoHarvest.Singleton
+namespace AutoHarvest.Singletons
 {
     /// <summary>
     /// Wrappes all the scrapers listings into one list and sorts accordingly
@@ -21,15 +20,11 @@ namespace AutoHarvest.Singleton
         private readonly FbMarketplace FbMarketplace;
         private readonly Gumtree Gumtree;
 
-        // headless browser for webscraping
-        private readonly CefSharpHeadless HeadlessBrowser;
-
-        public CarWrapper(Carsales carsales, FbMarketplace fbmarketplace, Gumtree gumtree, CefSharpHeadless headlessbrowser)
+        public CarWrapper(Carsales carsales, FbMarketplace fbmarketplace, Gumtree gumtree)
         {
             Carsales = carsales;
             FbMarketplace = fbmarketplace;
             Gumtree = gumtree;
-            HeadlessBrowser = headlessbrowser;
         }
 
         // get all the car listing from the websties asynchronously
@@ -38,14 +33,14 @@ namespace AutoHarvest.Singleton
             // scrape carsales based on toggle
             Task<List<Car>> CarsalesCars;
             if (FilterOptions.ToggleCarsales)
-                CarsalesCars = Carsales.ScrapeCarsales(HeadlessBrowser.CreateNewTab(), FilterOptions);
+                CarsalesCars = Carsales.ScrapeCarsales(FilterOptions);
             else
                 CarsalesCars = Task.FromResult(new List<Car>());
 
             // scrape facebook marketplace based on toggle
             Task<List<Car>> FbMarketplaceCars;
             if (FilterOptions.ToggleFBMarketplace)
-                FbMarketplaceCars = FbMarketplace.ScrapeFbMarketplace(HeadlessBrowser.CreateNewTab(), FilterOptions);
+                FbMarketplaceCars = FbMarketplace.ScrapeFbMarketplace(FilterOptions);
             else
                 FbMarketplaceCars = Task.FromResult(new List<Car>());
 
@@ -68,7 +63,7 @@ namespace AutoHarvest.Singleton
             Cars.AddRange(GumtreeCars.Result);
 
             // sort the list
-            Sort(ref Cars, FilterOptions.SortType);
+            //Sort(ref Cars, FilterOptions.SortType);
 
             return Cars;
         }

@@ -53,11 +53,11 @@ namespace AutoHarvest.Models
         [JsonProperty("marketplace_search")]
         public MarketplaceSearch MarketplaceSearch { get; set; }
 
-        [JsonProperty("marketplace_seo_page")]
-        public MarketplaceSeoPage MarketplaceSeoPage { get; set; }
-
         [JsonProperty("viewer")]
         public Viewer Viewer { get; set; }
+
+        [JsonProperty("marketplace_seo_page")]
+        public object MarketplaceSeoPage { get; set; }
 
         [JsonProperty("vehicle_model_query")]
         public object VehicleModelQuery { get; set; }
@@ -84,7 +84,7 @@ namespace AutoHarvest.Models
         public string SessionId { get; set; }
 
         [JsonProperty("logging_unit_id")]
-        public object LoggingUnitId { get; set; }
+        public string LoggingUnitId { get; set; }
     }
 
     public partial class Edge
@@ -300,81 +300,6 @@ namespace AutoHarvest.Models
         public bool HasNextPage { get; set; }
     }
 
-    public partial class MarketplaceSeoPage
-    {
-        [JsonProperty("__typename")]
-        public string Typename { get; set; }
-
-        [JsonProperty("popular_searches")]
-        public PopularSearch[] PopularSearches { get; set; }
-
-        [JsonProperty("id")]
-        public string Id { get; set; }
-
-        [JsonProperty("__isMarketplaceSEOPage")]
-        public string IsMarketplaceSeoPage { get; set; }
-
-        [JsonProperty("important_attributes_for_canonical_item")]
-        public object[] ImportantAttributesForCanonicalItem { get; set; }
-
-        [JsonProperty("canonical_products")]
-        public object[] CanonicalProducts { get; set; }
-
-        [JsonProperty("seo_navigation")]
-        public SeoNavigation[] SeoNavigation { get; set; }
-    }
-
-    public partial class PopularSearch
-    {
-        [JsonProperty("__typename")]
-        public string Typename { get; set; }
-
-        [JsonProperty("seo_url")]
-        public string SeoUrl { get; set; }
-
-        [JsonProperty("seo_localized_page_title")]
-        public string SeoLocalizedPageTitle { get; set; }
-
-        [JsonProperty("seo_publish_state")]
-        public string SeoPublishState { get; set; }
-
-        [JsonProperty("id")]
-        public string Id { get; set; }
-    }
-
-    public partial class SeoNavigation
-    {
-        [JsonProperty("__typename")]
-        public string Typename { get; set; }
-
-        [JsonProperty("seo_url")]
-        public string SeoUrl { get; set; }
-
-        [JsonProperty("seo_page_is_geo_agnostic")]
-        public bool SeoPageIsGeoAgnostic { get; set; }
-
-        [JsonProperty("seo_localized_page_title")]
-        public string SeoLocalizedPageTitle { get; set; }
-
-        [JsonProperty("virtual_category")]
-        public VirtualCategory VirtualCategory { get; set; }
-
-        [JsonProperty("id")]
-        public string Id { get; set; }
-    }
-
-    public partial class VirtualCategory
-    {
-        [JsonProperty("name")]
-        public string Name { get; set; }
-
-        [JsonProperty("virtual_taxonomy_publish_state")]
-        public string VirtualTaxonomyPublishState { get; set; }
-
-        [JsonProperty("id")]
-        public string Id { get; set; }
-    }
-
     public partial class Viewer
     {
         [JsonProperty("marketplace_settings")]
@@ -553,9 +478,6 @@ namespace AutoHarvest.Models
 
         [JsonProperty("filter_radius_km")]
         public long FilterRadiusKm { get; set; }
-
-        [JsonProperty("commerce_search_sort_by")]
-        public string CommerceSearchSortBy { get; set; }
     }
 
     public partial class CustomRequestParams
@@ -591,7 +513,7 @@ namespace AutoHarvest.Models
         public string LocationId { get; set; }
 
         [JsonProperty("url")]
-        public string Url { get; set; }
+        public object Url { get; set; }
     }
 
     public partial class FbMarketplaceJson

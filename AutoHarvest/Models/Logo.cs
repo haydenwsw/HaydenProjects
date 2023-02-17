@@ -5,6 +5,9 @@ using System.Threading.Tasks;
 
 namespace AutoHarvest.Models
 {
+    /// <summary>
+    /// model for the logo in the listing
+    /// </summary>
     public class Logo
     {
         public string LogoUrl;

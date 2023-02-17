@@ -20,6 +20,9 @@ mono_crash.*
 AutoHarvest/GPUCache/
 AutoHarvest/DawnCache/
 
+# remove the cookies
+AutoHarvest/cookies.*
+
 # Build results
 [Dd]ebug/
 [Dd]ebugPublic/

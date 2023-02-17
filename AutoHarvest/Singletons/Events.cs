@@ -3,10 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace AutoHarvest.Singleton
+namespace AutoHarvest.Singletons
 {
     /// <summary>
-    /// class for changing the title at certain dates
+    /// Changes the title at certain dates
     /// </summary>
     public class Events
     {

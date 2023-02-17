@@ -4,10 +4,10 @@ using System.Linq;
 using System.Threading.Tasks;
 using AutoHarvest.Models;
 
-namespace AutoHarvest.Singleton
+namespace AutoHarvest.Singletons
 {
     /// <summary>
-    /// 
+    /// gives the right logo to each listing
     /// </summary>
     public class LogoLookup
     {

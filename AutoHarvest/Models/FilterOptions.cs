@@ -23,6 +23,9 @@ namespace AutoHarvest.Models
         Automatic
     }
 
+    /// <summary>
+    /// model that holds the query from the user
+    /// </summary>
     public class FilterOptions
     {
         [MaxLength(100)]

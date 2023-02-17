@@ -6,6 +6,7 @@
 @using AutoHarvest.Models
 
 <link rel="stylesheet" href="~/css/FilterForm.css">
+<script type="text/javascript" src="~/js/site.js"></script>
 
 <form method="get">
 
@@ -48,8 +49,8 @@
         <div class="card-body">
             <div class="row-6 row-space">
                     <div class="input-group-1">
-                        <select class="input--style-1" asp-for="Sort"
-                                onchange="sortList(document.getElementById('itemList').getElementsByClassName('carItem'), document.getElementById('selectSort').selectedIndex)">
+                        <select id="selectSort" class="input--style-1" asp-for="Sort"
+                                onchange="sortList(document.getElementById('itemList'), document.getElementById('selectSort').selectedIndex)">
                             <option value=0>Price Low to High</option>
                             <option value=1>Price High to Low</option>
                             <option value=2>Unsorted</option>
@@ -59,7 +60,7 @@
                     </div>
                     <div class="input-group-1">
                         <select class="input--style-1" asp-for="Trans">
-                            <option value=0>All</option>
+                            <option value=0>All Trans</option>
                             <option value=1>Manual</option>
                             <option value=2>Automatic</option>
                         </select>
@@ -73,12 +74,12 @@
             <div class="row-6 row-space">
                 <div class="col--2">
                     <div class="input-group-1">
-                        <input class="input--style-1" type="text" placeholder="Min" asp-for="Min" value=@Model.Min onkeydown="return (!(event.keyCode>=65) && event.keyCode!=32);">
+                        <input class="input--style-1" type="text" placeholder="Min Price" asp-for="Min" value=@Model.Min onkeydown="return (!(event.keyCode>=65) && event.keyCode!=32);">
                     </div>
                 </div>
                 <div class="col--2">
                     <div class="input-group-1">
-                        <input class="input--style-1" type="text" placeholder="Max" asp-for="Max" value=@Model.Max onkeydown="return (!(event.keyCode>=65) && event.keyCode!=32);">
+                        <input class="input--style-1" type="text" placeholder="Max Price" asp-for="Max" value=@Model.Max onkeydown="return (!(event.keyCode>=65) && event.keyCode!=32);">
                     </div>
                 </div>
             </div>
@@ -153,19 +154,19 @@
         @if (Model.ShowPrevious)
         {
             <li class="page-item">
-                <a asp-page="" asp-route-SearchTerm="@Model.Search" asp-route-SortType="@Model.Sort"
-                   asp-route-TransType="@Model.Trans" asp-route-PriceMin="@Model.Min" asp-route-PriceMax="@Model.Max"
-                   asp-route-ToggleCarsales="@Model.Carsales" asp-route-ToggleFBMarketplace="@Model.FbMarketplace"
-                   asp-route-ToggleGumtree="@Model.Gumtree" asp-route-PageNum="@(Model.PageNum - 1)" class="page-link">Previous Page</a>
+                <a asp-page="" asp-route-Search="@Model.Search" asp-route-Sort="@Model.Sort"
+                   asp-route-Trans="@Model.Trans" asp-route-Min="@Model.Min" asp-route-Max="@Model.Max"
+                   asp-route-Carsales="@Model.Carsales" asp-route-FbMarketplace="@Model.FbMarketplace"
+                   asp-route-Gumtree="@Model.Gumtree" asp-route-PageNum="@(Model.PageNum - 1)" class="page-link">Previous Page</a>
             </li>
         }
         @if (Model.ShowNext)
         {
             <li class="page-item">
-                <a asp-page="" asp-route-SearchTerm="@Model.Search" asp-route-SortType="@Model.Sort"
-                   asp-route-TransType="@Model.Trans" asp-route-PriceMin="@Model.Min" asp-route-PriceMax="@Model.Max"
-                   asp-route-ToggleCarsales="@Model.Carsales" asp-route-ToggleFBMarketplace="@Model.FbMarketplace"
-                   asp-route-ToggleGumtree="@Model.Gumtree" asp-route-PageNum="@(Model.PageNum + 1)" class="page-link">Next Page</a>
+                <a asp-page="" asp-route-Search="@Model.Search" asp-route-Sort="@Model.Sort"
+                   asp-route-Trans="@Model.Trans" asp-route-Min="@Model.Min" asp-route-Max="@Model.Max"
+                   asp-route-Carsales="@Model.Carsales" asp-route-FbMarketplace="@Model.FbMarketplace"
+                   asp-route-Gumtree="@Model.Gumtree" asp-route-PageNum="@(Model.PageNum + 1)" class="page-link">Next Page</a>
             </li>
         }
     </ul>

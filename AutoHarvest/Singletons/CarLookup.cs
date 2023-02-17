@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace AutoHarvest.Singleton
+namespace AutoHarvest.Singletons
 {
     /// <summary>
     /// class for storing all the car makes and models WIP

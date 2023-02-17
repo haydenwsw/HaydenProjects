@@ -1,7 +1,6 @@
 ﻿using AutoHarvest.HelperFunctions;
 using AutoHarvest.Models;
 using AutoHarvest.Pages;
-using AutoHarvest.Singleton;
 using HtmlAgilityPack;
 using Microsoft.Extensions.Logging;
 using System;
@@ -12,7 +11,9 @@ using System.Threading.Tasks;
 
 namespace AutoHarvest.Scrapers
 {
-    // the class that webscrapes gumtree.com
+    /// <summary>
+    /// gumtree.com webscrape
+    /// </summary>
     public class Gumtree
     {
         // the urls for scraping
@@ -20,10 +21,13 @@ namespace AutoHarvest.Scrapers
         private readonly string[] sort = { "?sort=price_asc&ad=offering", "?sort=price_desc&ad=offering", "?ad=offering", "?sort=carmileageinkms_a&ad=offering", "?sort=carmileageinkms_d&ad=offering" };
         private readonly string[] trans = { "", "/cartransmission-m", "/cartransmission-a" };
 
+        private readonly HttpClient HttpClient;
         private readonly ILogger<Gumtree> Logger;
 
-        public Gumtree(ILogger<Gumtree> logger)
+        public Gumtree(IHttpClientFactory httpclientfactory, ILogger<Gumtree> logger)
         {
+            HttpClient = httpclientfactory.CreateClient();
+            //HttpClient.DefaultRequestHeaders.Add("user-agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/109.0");
             Logger = logger;
         }
 
@@ -37,17 +41,28 @@ namespace AutoHarvest.Scrapers
                 // Initializing the html doc
                 HtmlDocument htmlDocument = new HtmlDocument();
 
-                using (HttpClient httpClient = new HttpClient())
-                {
-                    // get the HTML doc of website with headers
-                    httpClient.DefaultRequestHeaders.Add("user-agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/109.0");
-                    url = $"{site}/s-cars-vans-utes/nsw/{FilterOptions.SearchTerm}{trans[FilterOptions.TransType]}/page-{FilterOptions.PageNumber}/k0c18320l3008839{sort[FilterOptions.SortType]}&price={FilterOptions.PriceMin}__{FilterOptions.PriceMax}";
-                    HttpResponseMessage response = await httpClient.GetAsync(url);
-                    string html = await response.Content.ReadAsStringAsync();
+                url = $"{site}/s-cars-vans-utes/nsw/{FilterOptions.SearchTerm}{trans[FilterOptions.TransType]}/page-{FilterOptions.PageNumber}/k0c18320l3008839{sort[FilterOptions.SortType]}&price={FilterOptions.PriceMin}__{FilterOptions.PriceMax}";
 
-                    // Load HTML doc
-                    htmlDocument.LoadHtml(html);
-                }
+                HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, url);
+                request.Headers.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/109.0");
+                request.Headers.Add("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8");
+                request.Headers.Add("Accept-Language", "en-US,en;q=0.5");
+                request.Headers.Add("Host", "www.gumtree.com.au");
+                request.Headers.Add("Referer", "https://www.gumtree.com.au/");
+                request.Headers.Add("DNT", "1");
+                request.Headers.Add("Connection", "keep-alive");
+                request.Headers.Add("Upgrade-Insecure-Requests", "1");
+                request.Headers.Add("Sec-Fetch-Dest", "document");
+                request.Headers.Add("Sec-Fetch-Mode", "navigate");
+                request.Headers.Add("Sec-Fetch-Site", "same-origin");
+                request.Headers.Add("TE", "trailers");
+
+                HttpResponseMessage response = await HttpClient.SendAsync(request);
+                response.EnsureSuccessStatusCode();
+                string html = await response.Content.ReadAsStringAsync();
+
+                // Load HTML doc
+                htmlDocument.LoadHtml(html);
 
                 // get all the listing
                 var items = htmlDocument.DocumentNode.Descendants("div")
@@ -55,9 +70,12 @@ namespace AutoHarvest.Scrapers
                       .Equals("user-ad-collection-new-design__wrapper--row"))
                       .FirstOrDefault().SelectNodes("a").ToArray();
 
-                // if failed to get the listing return a emtpy list
+                // if failed to get the listing return a empty list
                 if (items.Length == 0)
+                {
+                    Logger.LogInformation("Carsales scraper the listings are empty. CarsalesUrl: {url}. FilterOptions: {FilterOptions}", url, FilterOptions);
                     return new List<Car>();
+                }
 
                 // get the script that containts all the img urls
                 var script = htmlDocument.DocumentNode.Descendants("script").ToArray()[9].InnerHtml;
@@ -95,7 +113,10 @@ namespace AutoHarvest.Scrapers
                     string[] tags = items[i].GetAttributeValue("aria-label", "").Split('\n');
 
                     // get all the extra info in the listing
-                    var extrainfo = items[i].SelectSingleNode("./div[2]/div/ul").ChildNodes;
+                    var extrainfo = items[i].Descendants("ul")
+                        .Where(node => node.GetAttributeValue("class", "")
+                        .Equals("user-ad-attributes user-ad-row-new-design__attributes"))
+                        .FirstOrDefault().ChildNodes;
 
                     // get kms
                     int kms = extrainfo[0].InnerText.ToInt();
@@ -114,7 +135,7 @@ namespace AutoHarvest.Scrapers
                     string link = site + items[i].GetAttributeValue("href", "");
 
                     // add them all to the list
-                    carItems.Add(new Car(tags[0], link, imgUrl, tags[1].ToInt(), kms, Source.Gumtree, info));
+                    carItems.Add(new Car(tags[0].HtmlDecode(), link, imgUrl, tags[1].ToInt(), kms, Source.Gumtree, info));
                 }
 
                 // return the list

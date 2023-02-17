@@ -1,19 +1,20 @@
 ﻿using AutoHarvest.HelperFunctions;
 using AutoHarvest.Models;
 using AutoHarvest.Pages;
-using AutoHarvest.Singleton;
-using CefSharp.OffScreen;
 using HtmlAgilityPack;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Net.Http;
 using System.Threading.Tasks;
 
 namespace AutoHarvest.Scrapers
 {
-    // the class that webscrapes Carsales.com
+    /// <summary>
+    /// carsales.com webscrape
+    /// </summary>
     public class Carsales
     {
         private readonly string site = "https://www.carsales.com.au/";
@@ -21,15 +22,17 @@ namespace AutoHarvest.Scrapers
         private readonly string[] TransType = { "", "._.GenericGearType.Manual", "._.GenericGearType.Automatic" };
         private readonly string priceRangeText = "._.Price.range({0}..{1})";
 
+        private readonly HttpClient HttpClient;
         private readonly ILogger<Carsales> Logger;
 
-        public Carsales(ILogger<Carsales> logger)
+        public Carsales(IHttpClientFactory httpclientfactory, ILogger<Carsales> logger)
         {
+            HttpClient = httpclientfactory.CreateClient();
             Logger = logger;
         }
 
         // webscrape Carsales for all the listings
-        public async Task<List<Car>> ScrapeCarsales(ChromiumWebBrowser Tab, FilterOptions FilterOptions)
+        public async Task<List<Car>> ScrapeCarsales(FilterOptions FilterOptions)
         {
             string url = null;
 
@@ -43,25 +46,49 @@ namespace AutoHarvest.Scrapers
 
                 // get the HTML doc of website
                 url = $"{site}cars/?sort={SortType[FilterOptions.SortType]}&q=(And.Service.CARSALES._.CarAll.keyword({FilterOptions.SearchTerm})._.State.New South Wales{TransType[FilterOptions.TransType]}{priceRange}.)&offset={(FilterOptions.PageNumber - 1) * 12}";
-                string html = await CefSharpHeadless.GetHtmlAsybc(Tab, url);
+
+                HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, url);
+                request.Headers.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/109.0");
+                request.Headers.Add("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8");
+                request.Headers.Add("Accept-Language", "en-US,en;q=0.5");
+                request.Headers.Add("Host", "www.carsales.com.au");
+                request.Headers.Add("Referer", "https://carsid.carsales.com.au/");
+                request.Headers.Add("DNT", "1");
+                request.Headers.Add("Connection", "keep-alive");
+                request.Headers.Add("Upgrade-Insecure-Requests", "1");
+                request.Headers.Add("Sec-Fetch-Dest", "document");
+                request.Headers.Add("Sec-Fetch-Mode", "navigate");
+                request.Headers.Add("Sec-Fetch-Site", "same-site");
+                request.Headers.Add("TE", "trailers");
+
+                HttpResponseMessage response = await HttpClient.SendAsync(request);
+                response.EnsureSuccessStatusCode();
+                string html = await response.Content.ReadAsStringAsync();
 
                 // Load HTML doc
                 htmlDocument.LoadHtml(html);
 
-                // get all the listing
+                // get the listing's parent node
                 var nodes = htmlDocument.DocumentNode.Descendants("div")
                       .Where(node => node.GetAttributeValue("class", "")
                       .Equals("listing-items"));
 
                 // if failed return empty
                 if (!nodes.Any())
+                {
+                    Logger.LogInformation("Carsales scraper the listings parent node has no children. CarsalesUrl: {url}. FilterOptions: {FilterOptions}", url, FilterOptions);
                     return new List<Car>();
+                }
 
+                // get all the listing
                 var items = nodes.FirstOrDefault().SelectNodes("div").ToArray();
 
                 // if failed to get the listing return a emtpy list
                 if (items.Length == 0)
+                {
+                    Logger.LogInformation("Carsales scraper the listings are empty. CarsalesUrl: {url}. FilterOptions: {FilterOptions}", url, FilterOptions);
                     return new List<Car>();
+                }
 
                 var carItems = new List<Car>();
                 for (int i = 0; i < items.Length; i++)
@@ -84,7 +111,7 @@ namespace AutoHarvest.Scrapers
                     HtmlNode cardbody = items[i].SelectSingleNode("./div[@class='card-body']");
 
                     // get listing title
-                    string name = cardbody.SelectSingleNode("./div/div/h3/a").InnerText;
+                    string name = cardbody.SelectSingleNode("./div/div/h3/a").InnerText.HtmlDecode();
 
                     // get listing price
                     int price = cardbody.SelectSingleNode("./div/div/div/div/a").InnerText.ToInt();

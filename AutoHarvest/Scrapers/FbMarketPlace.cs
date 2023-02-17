@@ -5,14 +5,16 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using AutoHarvest.Singleton;
-using CefSharp.OffScreen;
 using AutoHarvest.Pages;
 using Microsoft.Extensions.Logging;
+using System.Net.Http;
+using AutoHarvest.Singletons;
 
 namespace AutoHarvest.Scrapers
 {
-    // the class that webscrapes facebook.com/marketplace
+    /// <summary>
+    /// facebook.com/marketplace webscrape
+    /// </summary>
     public class FbMarketplace
     {
         // the urls for scraping
@@ -20,15 +22,19 @@ namespace AutoHarvest.Scrapers
         private readonly string[] trans = { "", "&transmissionType=manual", "&transmissionType=automatic" };
         private readonly string[] sort = { "price_ascend", "price_descend", "", "", "" };
 
+        private readonly HttpClient HttpClient;
+        private readonly Cookies Cookies;
         private readonly ILogger<FbMarketplace> Logger;
 
-        public FbMarketplace(ILogger<FbMarketplace> logger)
+        public FbMarketplace(IHttpClientFactory httpclientfactory, Cookies cookies, ILogger<FbMarketplace> logger)
         {
+            HttpClient = httpclientfactory.CreateClient();
+            Cookies = cookies;
             Logger = logger;
         }
 
         // webscrape FbMarketplace for all the listings
-        public async Task<List<Car>> ScrapeFbMarketplace(ChromiumWebBrowser Tab, FilterOptions FilterOptions)
+        public async Task<List<Car>> ScrapeFbMarketplace(FilterOptions FilterOptions)
         {
             string url = null;
 
@@ -47,17 +53,42 @@ namespace AutoHarvest.Scrapers
 
                 // get the HTML doc of website
                 url = $"{site}sydney/search?query={FilterOptions.SearchTerm}&sortBy={sort[FilterOptions.SortType]}{minPrice}{maxPrice}{trans[FilterOptions.TransType]}&category_id=vehicles&exact=false";
-                string html = await CefSharpHeadless.GetHtmlAsybc(Tab, url);
+
+                HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, url);
+                request.Headers.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/109.0");
+                request.Headers.Add("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8");
+                request.Headers.Add("Accept-Language", "en-US,en;q=0.5");
+                request.Headers.Add("DNT", "1");
+                request.Headers.Add("Alt-Used", "www.facebook.com");
+                request.Headers.Add("Connection", "keep-alive");
+                request.Headers.Add("Cookie", Cookies.FbMarketplace);
+                request.Headers.Add("Upgrade-Insecure-Requests", "1");
+                request.Headers.Add("Sec-Fetch-Dest", "document");
+                request.Headers.Add("Sec-Fetch-Mode", "navigate");
+                request.Headers.Add("Sec-Fetch-Site", "none");
+                request.Headers.Add("Sec-Fetch-User", "?1");
+                request.Headers.Add("TE", "trailers");
+
+                HttpResponseMessage response = await HttpClient.SendAsync(request);
+                response.EnsureSuccessStatusCode();
+                string html = await response.Content.ReadAsStringAsync();
 
                 // Load HTML doc
                 htmlDocument.LoadHtml(html);
 
                 // gets the longest string in the list
-                string script = htmlDocument.DocumentNode.Descendants("script").Aggregate("", (max, cur) => max.Length > cur.InnerText.Length ? max : cur.InnerText);
+                string script = htmlDocument.DocumentNode.Descendants("script").Select(s => s.InnerText).Where(x => x.Contains("MarketplaceFeedListingStoryObject")).FirstOrDefault();
 
-                // get the raw json from the script
+                if (script == null)
+                {
+                    Logger.LogInformation("FbMarketplace scraper hasn't found a script to scrape from. FbMarketplaceUrl: {url}. FilterOptions: {FilterOptions}", url, FilterOptions);
+                    return new List<Car>();
+                }
+
+                // trim down the json to makes things less of a headache
                 int idx = script.IndexOf("{\"__bbox");
-                string json = script.Substring(idx, script.Length - idx - 12); // hard code values for good luck
+                idx = script.IndexOf("{\"__bbox", idx + "{\"__bbox".Length);
+                string json = script.Substring(idx, script.Length - idx - 41); // hard code values for good luck
 
                 // deserialize into the model
                 FbMarketplaceJson fbMarketplaceModel = FbMarketplaceJson.FromJson(json);
@@ -65,7 +96,10 @@ namespace AutoHarvest.Scrapers
 
                 // if search comes up empty return
                 if (items.Length == 0)
+                {
+                    Logger.LogInformation("FbMarketplace scraper the listings are empty. FbMarketplaceUrl: {url}. FilterOptions: {FilterOptions}", url, FilterOptions);
                     return new List<Car>();
+                }
 
                 // add them to the list
                 List<Car> carItems = new List<Car>();
@@ -75,7 +109,7 @@ namespace AutoHarvest.Scrapers
 
                     // add item
                     carItems.Add(new Car(
-                        items[i].Node.Listing.MarketplaceListingTitle, // title
+                        items[i].Node.Listing.MarketplaceListingTitle.HtmlDecode(), // title
                         $"{site}item/{items[i].Node.Listing.Id}", // link
                         items[i].Node.Listing.PrimaryListingPhoto.Image.Uri.AbsoluteUri, // image
                         items[i].Node.Listing.ListingPrice.FormattedAmount.ToInt(), // price

@@ -19,17 +19,19 @@ namespace AutoHarvest.Models
         Gumtree
     }
 
+    /// <summary>
+    /// Model class that holds the a car listing
+    /// </summary>
     public class Car
     {
-        public string Name { get; private set; }
-        public string Link { get; private set; }
-        public string ImgUrl { get; private set; }
-        public int Price { get; private set; }
-        public int KMs { get; private set; }
-        public string[] ExtraInfo { get; private set; }
-        public Source Source { get; private set; }
+        public readonly string Name;
+        public readonly string Link;
+        public readonly string ImgUrl;
+        public readonly int Price;
+        public readonly int KMs;
+        public readonly string[] ExtraInfo;
+        public readonly Source Source;
 
-        // init
         public Car(string name, string link, string imgurl, int price, int kms, Source source, string[] extrainfo = null)
         {
             Name = name;
