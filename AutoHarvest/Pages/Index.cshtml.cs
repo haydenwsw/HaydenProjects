@@ -10,12 +10,26 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.Logging;
 using System.Threading;
 using System.ComponentModel.DataAnnotations;
+using AutoHarvest.Models.Json;
+using Microsoft.Extensions.Options;
 
 namespace AutoHarvest.Pages
 {
     public class IndexModel : PageModel
     {
         #region Url Params
+
+        // the make of the car (car brand)
+        [Required]
+        [MaxLength(25)]
+        [BindProperty(SupportsGet = true)]
+        public string Make { get; set; }
+
+        // the model of the car (car brand's model)
+        [MaxLength(25)]
+        [BindProperty(SupportsGet = true)]
+        public string Model { get; set; }
+
         // the search term
         [Required]
         [MaxLength(100)]
@@ -62,7 +76,7 @@ namespace AutoHarvest.Pages
 
         // page number properties
         public bool ShowPrevious => PageNum > 1;
-        public bool ShowNext => PageNum < 10 && Search != null;
+        public bool ShowNext => PageNum < 10 && Make != null && Model != null;
 
         // the icons for all the extra info
         public static readonly string[] Icons = new string[3] { "fa fa-car", "fa fa-cog", "fa fa-wrench" };
@@ -74,14 +88,17 @@ namespace AutoHarvest.Pages
 
         public readonly CarWrapper CarWrapper;
 
-        public readonly LogoLookup LogoLookup;
+        public readonly CarLookup CarLookup;
+
+        public readonly CarFinder CarFinder;
 
         private readonly ILogger<IndexModel> Logger;
 
-        public IndexModel(CarWrapper carwrapper, LogoLookup logoLookup, ILogger<IndexModel> logger, Events events)
+        public IndexModel(CarWrapper carwrapper, CarLookup carlookup, IOptions<CarFinder> carfinder, ILogger<IndexModel> logger, Events events)
         {
             CarWrapper = carwrapper;
-            LogoLookup = logoLookup;
+            CarLookup = carlookup;
+            CarFinder = carfinder.Value;
             Logger = logger;
             Title = events.GetTitle();
             Cars = new List<Car>();
@@ -91,13 +108,13 @@ namespace AutoHarvest.Pages
         {
             try
             {
-                // searches for used cars
-                if (Search != null)
+                // get cars on make model or search
+                if (Make != null && Model != null)
                 {
                     // log activity
                     Logger.LogInformation("CarFinder: {ipaddress} {url}", Request.HttpContext.Connection.RemoteIpAddress, Request.QueryString);
 
-                    FilterOptions filterOptions = new FilterOptions(Search, Sort, Trans, Min, Max,
+                    FilterOptions filterOptions = new FilterOptions(Make, Model, Search, Sort, Trans, Min, Max,
                         Carsales, FbMarketplace, Gumtree, PageNum);
 
                     // get the car listings
@@ -109,12 +126,6 @@ namespace AutoHarvest.Pages
                 Logger.LogCritical(ex, "CarFinder has ran into a fatally error. QueryString: {url}", Request.QueryString);
                 Response.Redirect("error");
             }
-        }
-
-        // get the logo of the listings website that is was scraped from
-        public Logo GetLogo(Source source)
-        {
-            return LogoLookup.GetLogo(source);
         }
     }
 }

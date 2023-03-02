@@ -7,7 +7,7 @@ using AutoHarvest.HelperFunctions;
 
 namespace AutoHarvest.Models
 {
-    public enum SortTypes
+    public enum SortBy
     {
         PriceLowtoHigh,
         PriceHightoLow,
@@ -16,7 +16,7 @@ namespace AutoHarvest.Models
         KilometresHightoLow
     }
 
-    public enum TransTypes
+    public enum Transmission
     {
         All,
         Manuel,
@@ -28,18 +28,25 @@ namespace AutoHarvest.Models
     /// </summary>
     public class FilterOptions
     {
+        [MaxLength(25)]
+        public string Make { get; private set; }
+
+        [MaxLength(25)]
+        public string Model { get; private set; }
+
+
         [MaxLength(100)]
         public string SearchTerm { get; private set; }
 
-        public int SortType { get; private set; }
+        public int SortBy { get; private set; }
 
-        public int TransType { get; private set; }
-
-        [MaxLength(10)]
-        public string PriceMin { get; private set; }
+        public int Transmission { get; private set; }
 
         [MaxLength(10)]
-        public string PriceMax { get; private set; }
+        public string MinPrice { get; private set; }
+
+        [MaxLength(10)]
+        public string MaxPrice { get; private set; }
 
         public bool ToggleCarsales { get; private set; }
 
@@ -49,13 +56,15 @@ namespace AutoHarvest.Models
 
         public int PageNumber { get; private set; }
 
-        public FilterOptions(string searchterm, int sorttype, int transtype, string pricemin, string pricemax, bool togglecarsales, bool togglefbmarketplace, bool togglegumtree, int pagenumber)
+        public FilterOptions(string make, string model, string searchterm, int sorttype, int transtype, string pricemin, string pricemax, bool togglecarsales, bool togglefbmarketplace, bool togglegumtree, int pagenumber)
         {
+            Make = make;
+            Model = model;
             SearchTerm = searchterm;
-            SortType = Math.Clamp(sorttype, 0, 4);
-            TransType = Math.Clamp(transtype, 0, 2);
-            PriceMin = pricemin.LeaveOnlyNumbers();
-            PriceMax = pricemax.LeaveOnlyNumbers();
+            SortBy = Math.Clamp(sorttype, 0, 4);
+            Transmission = Math.Clamp(transtype, 0, 2);
+            MinPrice = pricemin.LeaveOnlyNumbers();
+            MaxPrice = pricemax.LeaveOnlyNumbers();
             ToggleCarsales = togglecarsales;
             ToggleFBMarketplace = togglefbmarketplace;
             ToggleGumtree = togglegumtree;
@@ -64,7 +73,17 @@ namespace AutoHarvest.Models
 
         public override string ToString()
         {
-            return $"Search: {SearchTerm}, Sort: {(SortTypes)SortType}, Trans: {(TransTypes)TransType}, Min: {PriceMin}, Max: {PriceMax}, Carsales: {ToggleCarsales}, FbMarketplace: {ToggleFBMarketplace}, Gumtree: {ToggleGumtree}, Page: {PageNumber}";
+            return $"Search: {SearchTerm}, Sort: {(SortBy)SortBy}, Trans: {(Transmission)Transmission}, Min: {MinPrice}, Max: {MaxPrice}, Carsales: {ToggleCarsales}, FbMarketplace: {ToggleFBMarketplace}, Gumtree: {ToggleGumtree}, Page: {PageNumber}";
+        }
+
+        public T GetSort<T>(T[] sortArr)
+        {
+            return sortArr[SortBy];
+        }
+
+        public T GetTrans<T>(T[] transArr)
+        {
+            return transArr[Transmission];
         }
     }
 }

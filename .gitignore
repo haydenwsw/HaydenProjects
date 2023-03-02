@@ -20,8 +20,8 @@ mono_crash.*
 AutoHarvest/GPUCache/
 AutoHarvest/DawnCache/
 
-# remove the cookies
-AutoHarvest/cookies.*
+# remove user generated contents
+AutoHarvest/CarSearcher/
 
 # Build results
 [Dd]ebug/

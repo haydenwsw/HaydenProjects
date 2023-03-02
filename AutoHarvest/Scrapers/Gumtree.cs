@@ -1,8 +1,12 @@
 ﻿using AutoHarvest.HelperFunctions;
 using AutoHarvest.Models;
+using AutoHarvest.Models.Json;
 using AutoHarvest.Pages;
+using AutoHarvest.Singletons;
 using HtmlAgilityPack;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,138 +18,213 @@ namespace AutoHarvest.Scrapers
     /// <summary>
     /// gumtree.com webscrape
     /// </summary>
-    public class Gumtree
+    public partial class Gumtree
     {
         // the urls for scraping
-        private readonly string site = "https://www.gumtree.com.au";
-        private readonly string[] sort = { "?sort=price_asc&ad=offering", "?sort=price_desc&ad=offering", "?ad=offering", "?sort=carmileageinkms_a&ad=offering", "?sort=carmileageinkms_d&ad=offering" };
-        private readonly string[] trans = { "", "/cartransmission-m", "/cartransmission-a" };
+        private readonly string Site = "https://www.gumtree.com.au";
+        private readonly string[] Sortby = { "price_asc", "price_desc", "date", "carmileageinkms_a", "carmileageinkms_d" };
+        private readonly string[] Transmission = { null, "m", "a" };
 
         private readonly HttpClient HttpClient;
+        private readonly CarFinder CarFinder;
         private readonly ILogger<Gumtree> Logger;
 
-        public Gumtree(IHttpClientFactory httpclientfactory, ILogger<Gumtree> logger)
+        public Gumtree(IHttpClientFactory httpclientfactory, IOptions<CarFinder> carfinder, ILogger<Gumtree> logger)
         {
             HttpClient = httpclientfactory.CreateClient();
-            //HttpClient.DefaultRequestHeaders.Add("user-agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/109.0");
+            CarFinder = carfinder.Value;
             Logger = logger;
         }
 
-        // webscrape Gumtree for all the listings
-        public async Task<List<Car>> ScrapeGumtree(FilterOptions FilterOptions)
+        public async Task<List<Car>> ScrapeCars(FilterOptions filterOptions, CarLookup carLookup)
         {
             string url = null;
 
             try
             {
-                // Initializing the html doc
-                HtmlDocument htmlDocument = new HtmlDocument();
+                // get the make model keys
+                string make = carLookup.MakeModel[filterOptions.Make].Item1.GumtreeKey;
+                string model = carLookup.MakeModel[filterOptions.Make].Item2[filterOptions.Model].GumtreeKey;
 
-                url = $"{site}/s-cars-vans-utes/nsw/{FilterOptions.SearchTerm}{trans[FilterOptions.TransType]}/page-{FilterOptions.PageNumber}/k0c18320l3008839{sort[FilterOptions.SortType]}&price={FilterOptions.PriceMin}__{FilterOptions.PriceMax}";
+                // get the search params for make model or text
+                string search;
+                if (filterOptions.SearchTerm == null)
+                    search = (make != null ? $"attributeMap[cars.carmake_s]={make}&" : "") +
+                    (model != null ? $"attributeMap[cars.carmodel_s]={model}&" : "");
+                else
+                    search = $"keywords={filterOptions.SearchTerm}&";
+
+                // build the url
+                url = $"{Site}/ws/search.json?{search}" +
+                    (filterOptions.GetTrans(Transmission) != null ? $"attributeMap[cars.cartransmission_s]={filterOptions.GetTrans(Transmission)}&" : "") +
+                    $"categoryId=18320&categoryName=Cars%2C%20Vans%20%26%20Utes&defaultRadius=10&" +
+                    $"locationId=3008839&locationStr=New%20South%20Wales&" +
+                    (filterOptions.MaxPrice != "" ? $"maxPrice={filterOptions.MaxPrice}&" : "") +
+                    (filterOptions.MinPrice != "" ? $"minPrice={filterOptions.MinPrice}&" : "") +
+                    $"offerType=OFFER&" +
+                    $"pageNum={filterOptions.PageNumber}&" +
+                    $"pageSize=24&" +
+                    $"previousCategoryId=18320&radius=0&searchView=GALLERY&" +
+                    $"sortByName={filterOptions.GetSort(Sortby)}";
 
                 HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, url);
-                request.Headers.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/109.0");
-                request.Headers.Add("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8");
+
+                request.Headers.Add("User-Agent", CarFinder.UserAgent);
+                request.Headers.Add("Accept", "*/*");
                 request.Headers.Add("Accept-Language", "en-US,en;q=0.5");
-                request.Headers.Add("Host", "www.gumtree.com.au");
-                request.Headers.Add("Referer", "https://www.gumtree.com.au/");
                 request.Headers.Add("DNT", "1");
                 request.Headers.Add("Connection", "keep-alive");
-                request.Headers.Add("Upgrade-Insecure-Requests", "1");
-                request.Headers.Add("Sec-Fetch-Dest", "document");
-                request.Headers.Add("Sec-Fetch-Mode", "navigate");
+                request.Headers.Add("Sec-Fetch-Dest", "empty");
+                request.Headers.Add("Sec-Fetch-Mode", "cors");
                 request.Headers.Add("Sec-Fetch-Site", "same-origin");
                 request.Headers.Add("TE", "trailers");
 
                 HttpResponseMessage response = await HttpClient.SendAsync(request);
                 response.EnsureSuccessStatusCode();
-                string html = await response.Content.ReadAsStringAsync();
+                string json = await response.Content.ReadAsStringAsync();
 
-                // Load HTML doc
-                htmlDocument.LoadHtml(html);
+                GumtreeResponce fbMarketplaceResponse = JsonConvert.DeserializeObject<GumtreeResponce>(json);
 
-                // get all the listing
-                var items = htmlDocument.DocumentNode.Descendants("div")
-                      .Where(node => node.GetAttributeValue("class", "")
-                      .Equals("user-ad-collection-new-design__wrapper--row"))
-                      .FirstOrDefault().SelectNodes("a").ToArray();
+                ResultList[] resultLists = fbMarketplaceResponse.Data.Results.ResultList;
 
-                // if failed to get the listing return a empty list
-                if (items.Length == 0)
+                //if search comes up empty return
+                if (resultLists.Length == 0)
                 {
-                    Logger.LogInformation("Carsales scraper the listings are empty. CarsalesUrl: {url}. FilterOptions: {FilterOptions}", url, FilterOptions);
+                    Logger.LogInformation("Gumtree scraper the listings are empty. Gumtree: {url}. FilterOptions: {FilterOptions}", url, filterOptions);
                     return new List<Car>();
                 }
 
-                // get the script that containts all the img urls
-                var script = htmlDocument.DocumentNode.Descendants("script").ToArray()[9].InnerHtml;
-
-                // exstract the image urls from the script
-                string key = "mainImageUrl\":";
-                var imgUrls = new List<string>();
-                int idx = script.IndexOf(key, 0);
-                while (idx != -1)
+                List<Car> carItems = new List<Car>();
+                for (int i = 0; i < resultLists.Length; i++)
                 {
-                    // walk forwards through the string to construct the text
-                    idx += key.Length + 1;
-                    string imgUrl = "";
-                    while (script[idx] != '"')
-                    {
-                        imgUrl += script[idx++];
-                    }
-                    imgUrls.Add(imgUrl);
+                    if (resultLists[i].MainImageUrl == null)
+                        continue;
 
-                    // break early when found all the images are found to save time
-                    if (imgUrls.Count == items.Length)
-                        break;
-
-                    // find the next url in the string
-                    idx = script.IndexOf(key, idx + 1);
+                    // add item
+                    carItems.Add(new Car(
+                        resultLists[i].Title, 
+                        Site + resultLists[i].Url, 
+                        resultLists[i].MainImageUrl.AbsoluteUri, 
+                        resultLists[i].PriceText.ToInt(), 
+                        resultLists[i].MainAttributes.Data.Carmileageinkms.ToInt(), 
+                        Source.Gumtree, 
+                        new string[3] { resultLists[i].MainAttributes.Data.Carbodytype, resultLists[i].MainAttributes.Data.Cartransmission,
+                            Join(resultLists[i].MainAttributes.Data.CylinderConfiguration, resultLists[i].MainAttributes.Data.EngineCapacityLitres) }
+                        ));
                 }
 
-                var carItems = new List<Car>();
-
-                // get all the useful info
-                int counter = 0;
-                for (int i = 0; i < items.Length; i++)
-                {
-                    // get the name, price and (location and time posted)
-                    string[] tags = items[i].GetAttributeValue("aria-label", "").Split('\n');
-
-                    // get all the extra info in the listing
-                    var extrainfo = items[i].Descendants("ul")
-                        .Where(node => node.GetAttributeValue("class", "")
-                        .Equals("user-ad-attributes user-ad-row-new-design__attributes"))
-                        .FirstOrDefault().ChildNodes;
-
-                    // get kms
-                    int kms = extrainfo[0].InnerText.ToInt();
-
-                    // get body type, transmission type and engine cyl
-                    string[] info = new string[3];
-                    for (int j = 1; j < extrainfo.Count; j++)
-                    {
-                        info[j - 1] = extrainfo[j].InnerText;
-                    }
-
-                    // gets the listings image url
-                    string imgUrl = imgUrls[counter++];
-
-                    // get the item url
-                    string link = site + items[i].GetAttributeValue("href", "");
-
-                    // add them all to the list
-                    carItems.Add(new Car(tags[0].HtmlDecode(), link, imgUrl, tags[1].ToInt(), kms, Source.Gumtree, info));
-                }
-
-                // return the list
                 return carItems;
             }
             catch (Exception ex)
             {
-                Logger.LogError(ex, "Carsales scraper has failed. CarsalesUrl: {url}. FilterOptions: {FilterOptions}", url, FilterOptions);
+                Logger.LogError(ex, "Gumtree scraper has failed. Gumtree: {url}. FilterOptions: {FilterOptions}", url, filterOptions);
                 return new List<Car>();
             }
         }
+
+        /// <summary>
+        /// Gets all the makes and model from Gumtree
+        /// </summary>
+        /// <param name="allMakeModel"></param>
+        /// <returns></returns>
+        public async Task GetMakeModel(Dictionary<string, (string, List<(string, string)>)> allMakeModel)
+        {
+            // first get all the makes
+            HtmlDocument htmlDocument = new HtmlDocument();
+            HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, "https://www.gumtree.com.au/cars");
+
+            request.Headers.Add("User-Agent", CarFinder.UserAgent);
+            request.Headers.Add("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8");
+            request.Headers.Add("Accept-Language", "en-US,en;q=0.5");
+            request.Headers.Add("Referer", "https://www.gumtree.com.au/");
+            request.Headers.Add("DNT", "1");
+            request.Headers.Add("Connection", "keep-alive");
+            request.Headers.Add("Upgrade-Insecure-Requests", "1");
+            request.Headers.Add("Sec-Fetch-Dest", "document");
+            request.Headers.Add("Sec-Fetch-Mode", "navigate");
+            request.Headers.Add("Sec-Fetch-Site", "same-origin");
+
+            HttpResponseMessage response = await HttpClient.SendAsync(request);
+            response.EnsureSuccessStatusCode();
+            string html = await response.Content.ReadAsStringAsync();
+
+            // Load HTML doc
+            htmlDocument.LoadHtml(html);
+
+            HtmlNode selectNode = htmlDocument.DocumentNode.SelectSingleNode("//*[@id=\"clp-as-make\"]");
+
+            if (selectNode == null && selectNode.ChildNodes == null)
+                throw new Exception($"The makes select node is null or empty");
+
+            // add make to the main list
+            foreach (HtmlNode option in selectNode.SelectNodes("option"))
+            {
+                string make = option.GetAttributeValue("value", "");
+                if (make == "")
+                    continue;
+
+                allMakeModel.TryAdd(option.InnerText.Trim(), (make, new List<(string, string)>()));
+            }
+
+            // then loop through all the makes to get all the models
+            foreach (KeyValuePair<string, (string, List<(string, string)>)> item in allMakeModel)
+            {
+                request = new HttpRequestMessage(HttpMethod.Get, $"https://www.gumtree.com.au/p-select-attribute.json?categoryId=18320&attributeId=cars.carmake_s&rootAttribute=cars.carmake_s&optionPath={item.Value.Item1}");
+
+                request.Headers.Add("User-Agent", CarFinder.UserAgent);
+                request.Headers.Add("Accept", "application/json, text/javascript, */*; q=0.01");
+                request.Headers.Add("Accept-Language", "en-US,en;q=0.5");
+                request.Headers.Add("DNT", "1");
+                request.Headers.Add("Connection", "keep-alive");
+                request.Headers.Add("Referer", "https://www.gumtree.com.au/cars");
+                request.Headers.Add("Sec-Fetch-Dest", "empty");
+                request.Headers.Add("Sec-Fetch-Mode", "cors");
+                request.Headers.Add("Sec-Fetch-Site", "same-origin");
+                request.Headers.Add("TE", "trailers");
+
+                // wait a bit so we don't spam the server
+                await Task.Delay(500);
+
+                response = await HttpClient.SendAsync(request);
+                response.EnsureSuccessStatusCode();
+                string json = await response.Content.ReadAsStringAsync();
+
+                GumtreeModels gumtreeModels = JsonConvert.DeserializeObject<GumtreeModels[]>(json).FirstOrDefault();
+
+                if (gumtreeModels == null)
+                    continue;
+
+                for (int i = 1; i < gumtreeModels.Items.Length; i++)
+                {
+                    allMakeModel[item.Key].Item2.Add((gumtreeModels.Items[i].Id, gumtreeModels.Items[i].Value));
+                }
+            }
+        }
+
+        private string Join(string a, string b)
+        {
+            if (a != null && b != null)
+                return $"{a} {b}";
+            else if (a == null ^ b == null)
+                return $"{a}{b}";
+            else
+                return null;
+        }
+
+        #region model for the car models
+        private partial class GumtreeModels
+        {
+            public string Name { get; set; }
+            public string Id { get; set; }
+            public Item[] Items { get; set; }
+            public bool GumtreeModelRequired { get; set; }
+        }
+
+        private partial class Item
+        {
+            public string Id { get; set; }
+            public string Value { get; set; }
+        }
+        #endregion
     }
 }

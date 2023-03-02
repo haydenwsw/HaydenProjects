@@ -9,54 +9,54 @@ namespace AutoHarvest.Tests
 {
     public class TestScrapers
     {
-        private IHttpClientFactory httpClient;
+        private IHttpClientFactory HttpClient;
 
         public TestScrapers()
         {
-            var httpClient = new DefaultHttpClientFactory();
+            HttpClient = new DefaultHttpClientFactory();
         }
 
         [Theory]
-        [InlineData("celica", 1, (int)SortTypes.PriceLowtoHigh, (int)TransTypes.All)]
-        public async void ScrapeGumtree(string search, int page, int sortType, int transType)
+        [InlineData("celica", (int)SortBy.PriceLowtoHigh, (int)Transmission.All, "", "", 1)]
+        public async void ScrapeCarsales(string search, int sortType, int transType, string priceMin, string priceMax, int page)
         {
+            FilterOptions filterOptions = new FilterOptions(search, sortType, transType, priceMin, priceMax, true, true, true, page);
+
+            //List<Car> CarsalesCars = await Carsales.ScrapeCarsales(search, page, transNum);
+
+            //Assert.NotEmpty(CarsalesCars);
+        }
+
+        [Theory]
+        [InlineData("celica", (int)SortBy.PriceLowtoHigh, (int)Transmission.All, "", "", 1)]
+        public async void ScrapeFbMarketPlace(string search, int sortType, int transType, string priceMin, string priceMax, int page)
+        {
+            FilterOptions filterOptions = new FilterOptions(search, sortType, transType, priceMin, priceMax, true, true, true, page);
+
+            //List<Car> FbMarketPlaceCars = await FbMarketplace.ScrapeFbMarketplace(null, search, page, transNum);
+
+            //Assert.NotEmpty(FbMarketPlaceCars);
+        }
+
+        [Theory]
+        [InlineData("celica", (int)SortBy.PriceLowtoHigh, (int)Transmission.All, "", "", 1)]
+        public async void ScrapeGumtree(string search, int sortType, int transType, string priceMin, string priceMax, int page)
+        {
+            FilterOptions filterOptions = new FilterOptions(search, sortType, transType, priceMin, priceMax, true, true, true, page);
+
             //Gumtree gumtree = new Gumtree(new HttpClient(), );
 
-            FilterOptions filterOptions = new FilterOptions(search, sortType, transType, "", "", true, true, true, page);
             //List<Car> GumtreeCars = await Gumtree.ScrapeGumtree(filterOptions);
 
             //Assert.NotEmpty(GumtreeCars);
         }
-
-        //[Theory]
-        //[InlineData("celica", 1, (int)TransTypes.All)]
-        //public async void ScrapeFbMarketPlace(string search, int page, int transNum)
-        //{
-        //    List<Car> FbMarketPlaceCars = await FbMarketplace.ScrapeFbMarketplace(null, search, page, transNum);
-
-        //    Assert.NotEmpty(FbMarketPlaceCars);
-        //}
-
-        //[Theory]
-        //[InlineData("celica", 1, 0)]
-        //public async void ScrapeCarsales(string search, int page, int transNum)
-        //{
-        //    List<Car> CarsalesCars = await Carsales.ScrapeCarsales(search, page, transNum);
-
-        //    Assert.NotEmpty(CarsalesCars);
-        //}
     }
 
     public sealed class DefaultHttpClientFactory : IHttpClientFactory, IDisposable
     {
-        private readonly Lazy<HttpMessageHandler> _handlerLazy = new(() => new HttpClientHandler());
+        private readonly Lazy<HttpMessageHandler> _handlerLazy = new Lazy<HttpMessageHandler>(() => new HttpClientHandler());
 
-        public HttpClient CreateClient(string name) => new(_handlerLazy.Value, disposeHandler: false);
-
-        public DefaultHttpClientFactory()
-        {
-
-        }
+        public HttpClient CreateClient(string name) => new HttpClient(_handlerLazy.Value, disposeHandler: false);
 
         public void Dispose()
         {

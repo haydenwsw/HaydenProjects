@@ -1,7 +1,9 @@
 ﻿using AutoHarvest.Models;
+using AutoHarvest.Models.Json;
 using AutoHarvest.Pages;
 using AutoHarvest.Scrapers;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -20,70 +22,71 @@ namespace AutoHarvest.Singletons
         private readonly FbMarketplace FbMarketplace;
         private readonly Gumtree Gumtree;
 
-        public CarWrapper(Carsales carsales, FbMarketplace fbmarketplace, Gumtree gumtree)
+        // data classes
+        private readonly CarLookup CarLookup;
+        private readonly CarFinder CarFinder;
+
+        public CarWrapper(Carsales carsales, FbMarketplace fbmarketplace, Gumtree gumtree, CarLookup carlookup, IOptions<CarFinder> carfinder)
         {
             Carsales = carsales;
             FbMarketplace = fbmarketplace;
             Gumtree = gumtree;
+            CarLookup = carlookup;
+            CarFinder = carfinder.Value;
         }
 
         // get all the car listing from the websties asynchronously
-        public async Task<List<Car>> GetCarsAsync(FilterOptions FilterOptions)
+        public async Task<List<Car>> GetCarsAsync(FilterOptions filterOptions)
         {
             // scrape carsales based on toggle
-            Task<List<Car>> CarsalesCars;
-            if (FilterOptions.ToggleCarsales)
-                CarsalesCars = Carsales.ScrapeCarsales(FilterOptions);
+            Task<List<Car>> carsalesCars;
+            if (filterOptions.ToggleCarsales && CarFinder.EnableCarsales)
+                carsalesCars = Carsales.ScrapeCars(filterOptions, CarLookup);
             else
-                CarsalesCars = Task.FromResult(new List<Car>());
+                carsalesCars = Task.FromResult(new List<Car>());
 
             // scrape facebook marketplace based on toggle
-            Task<List<Car>> FbMarketplaceCars;
-            if (FilterOptions.ToggleFBMarketplace)
-                FbMarketplaceCars = FbMarketplace.ScrapeFbMarketplace(FilterOptions);
+            Task<List<Car>> fbMarketplaceCars;
+            if (filterOptions.ToggleFBMarketplace && CarFinder.EnableFbMarketplace)
+                fbMarketplaceCars = FbMarketplace.ScrapeCars(filterOptions, CarLookup);
             else
-                FbMarketplaceCars = Task.FromResult(new List<Car>());
+                fbMarketplaceCars = Task.FromResult(new List<Car>());
 
             // scrape gumtree based on toggle
-            Task<List<Car>> GumtreeCars;
-            if (FilterOptions.ToggleGumtree)
-                GumtreeCars = Gumtree.ScrapeGumtree(FilterOptions);
+            Task<List<Car>> gumtreeCars;
+            if (filterOptions.ToggleGumtree && CarFinder.EnableGumtree)
+                gumtreeCars = Gumtree.ScrapeCars(filterOptions, CarLookup);
             else
-                GumtreeCars = Task.FromResult(new List<Car>());
+                gumtreeCars = Task.FromResult(new List<Car>());
 
             // await all the tasks in parallel at once
-            await Task.WhenAll(CarsalesCars, FbMarketplaceCars, GumtreeCars);
-
-            // create the list to the lenght of all the lists
-            var Cars = new List<Car>(CarsalesCars.Result.Count + FbMarketplaceCars.Result.Count + GumtreeCars.Result.Count);
+            List<Car>[] returnCars = await Task.WhenAll(carsalesCars, fbMarketplaceCars, gumtreeCars);
 
             // combine all the lists
-            Cars.AddRange(CarsalesCars.Result);
-            Cars.AddRange(FbMarketplaceCars.Result);
-            Cars.AddRange(GumtreeCars.Result);
+            List<Car> cars = returnCars.SelectMany(x => x).ToList();
 
-            // sort the list
-            //Sort(ref Cars, FilterOptions.SortType);
+            // sort the list on the backend because no frontend rendering engine
+            Sort(cars, filterOptions.SortBy);
 
-            return Cars;
+            return cars;
         }
 
         // sorts the list
-        private static void Sort(ref List<Car> Cars, int SortNum)
+        private static void Sort(List<Car> cars, int sortNum)
         {
-            switch (SortNum)
+            switch (sortNum)
             {
-                case (int)SortTypes.PriceLowtoHigh:
-                    Cars.Sort((x, y) => x.Price.CompareTo(y.Price));
+                case (int)SortBy.PriceLowtoHigh:
+                    cars.Sort((x, y) => x.Price.CompareTo(y.Price));
                     return;
-                case (int)SortTypes.PriceHightoLow:
-                    Cars.Sort((y, x) => x.Price.CompareTo(y.Price));
+                case (int)SortBy.PriceHightoLow:
+                    cars.Sort((y, x) => x.Price.CompareTo(y.Price));
                     return;
-                case (int)SortTypes.KilometresLowtoHigh:
-                    Cars.Sort((x, y) => x.KMs.CompareTo(y.KMs));
+                case (int)SortBy.KilometresLowtoHigh:
+                    cars.Sort((x, y) => x.KMs.CompareTo(y.KMs));
                     return;
-                case (int)SortTypes.KilometresHightoLow:
-                    Cars.Sort((y, x) => x.KMs.CompareTo(y.KMs));
+                case (int)SortBy.KilometresHightoLow:
+                    cars.Sort((y, x) => x.KMs.CompareTo(y.KMs));
                     return;
             }
         }

@@ -12,6 +12,8 @@ using Microsoft.AspNetCore.HttpOverrides;
 using AspNetCoreRateLimit;
 using AutoHarvest.Singletons;
 using AutoHarvest.Scrapers;
+using AutoHarvest.Models.Json;
+using System.IO;
 
 namespace AutoHarvest
 {
@@ -28,21 +30,27 @@ namespace AutoHarvest
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddRazorPages();
+            services.AddControllers();
+
+            services.AddHttpClient();
+
+            // get carfinder config
+            services.Configure<CarFinder>(Configuration.GetSection("CarFinder"));
+
+            // if the main folder doesn't exist create it
+            string Folder = Configuration.GetSection("CarFinder").Get<CarFinder>().Folder;
+            Directory.CreateDirectory($"./{Folder}");
 
             // add all the web scrapers
             services.AddSingleton<Carsales>();
             services.AddSingleton<FbMarketplace>();
             services.AddSingleton<Gumtree>();
-            services.AddHttpClient();
 
-            // add the cookkeys haha
-            services.AddSingleton<Cookies>();
+            // add make and model data
+            services.AddSingleton<CarLookup>();
 
             // add the scraper wrapper class
             services.AddSingleton<CarWrapper>();
-
-            // add the LogoLookup class
-            services.AddSingleton<LogoLookup>();
 
             // add the event class
             services.AddSingleton<Events>();
@@ -109,6 +117,7 @@ namespace AutoHarvest
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapRazorPages();
+                endpoints.MapControllers();
             });
         }
     }

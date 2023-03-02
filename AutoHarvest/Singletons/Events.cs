@@ -56,7 +56,7 @@ namespace AutoHarvest.Singletons
                     return "Happy Halloween";
 
                 case "21-12":
-                    return "Happy Birthday to the creator";
+                    return "Happy Birthday to me";
 
                 case "24-12":
                     return "Christmas Eve!";
