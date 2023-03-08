@@ -1,0 +1,118 @@
+﻿.title {
+    text-align: center;
+    margin-bottom: 40px;
+}
+
+.title2 {
+    text-align: center;
+    margin-bottom: 40px;
+}
+
+.project {
+    border: 10px solid rgb(75, 75, 75);
+    background: rgb(75, 75, 75);
+    border-radius: 5px;
+    transition: all 0.4s ease;
+    display: initial;
+}
+
+.link {
+    color: snow;
+}
+
+.row-space {
+    -webkit-box-pack: justify;
+    -webkit-justify-content: space-between;
+    -moz-box-pack: justify;
+    -ms-flex-pack: justify;
+    justify-content: space-between;
+}
+
+.item-group {
+    position: relative;
+    margin-bottom: 40px;
+}
+
+.row-moblie {
+    width: 100%;
+    text-align: center;
+}
+
+@media (max-width: 767px) {
+    .row-moblie {
+        width: 100%;
+        text-align: center;
+    }
+}
+
+.link:link {
+    text-decoration: none;
+}
+
+.link:visited {
+    text-decoration: none;
+}
+
+.project:hover {
+    text-decoration: none;
+    color: snow;
+    border: 10px solid rgb(65, 65, 65);
+    background: rgb(65, 65, 65);
+}
+
+.link:active {
+    text-decoration: none;
+}
+
+.fa {
+    color: rgb(127, 127, 127);
+}
+
+.fa:hover {
+    color: snow;
+}
+
+/* The actual popup */
+.popup .popuptext {
+    visibility: hidden;
+    width: 200px;
+    background-color: #555;
+    color: snow;
+    font-size: 16px;
+    text-align: center;
+    border-radius: 5px;
+    padding: 8px 0;
+    position: absolute;
+    z-index: 1;
+    bottom: 125%;
+    left: 50%;
+    margin-left: -100px;
+}
+
+/* Popup container - can be anything you want */
+.popup {
+    position: relative;
+    display: inline-block;
+    cursor: pointer;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+/* Popup arrow */
+.popup .popuptext::after {
+    content: "";
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    margin-left: -5px;
+    border-width: 5px;
+    border-style: solid;
+    border-color: #555 transparent transparent transparent;
+}
+
+/* Toggle this class - hide and show the popup */
+.popup .show {
+    visibility: visible;
+}

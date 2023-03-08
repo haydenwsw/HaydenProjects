@@ -1,0 +1,65 @@
+﻿@page
+@model HaydenProjects.Pages.IndexModel
+@{
+    ViewData["Title"] = Model.Title;
+}
+
+<link rel="stylesheet" href="~/css/index.css">
+
+<h1 class="title">Hayden Projects</h1>
+<h2 class="title2">Tools</h2>
+<div class="row row-space">
+    <div class="row-moblie">
+        <div class="item-group">
+            <h3 class="project">
+                <a class="link" href="/CarSearcher">
+                    <img src="~/icons/CarSearcher.ico" width=32 height=32>
+                    CarSearcher
+                </a>
+                <a class="popup" onclick="togglePopup(this, null)" onmouseover="togglePopup(this, true)" onmouseout="togglePopup(this, false)">
+                    <i class="fa fa-info-circle"></i>
+                    <span class="popuptext">Combinds the 3 car used car websites Carsale, Facebook Marketplace and Gumtree into one place</span>
+                </a>
+            </h3>
+        </div>
+    </div>
+    @*<div class="row-moblie">
+            <div class="item-group">
+                <h3>
+                    <a class="project" href="/CarScanner">CarScanner</a>
+                </h3>
+            </div>
+        </div>
+        <div class="row-moblie">
+            <div class="item-group">
+                <h3>
+                    <a class="project" href="/CarGuesser">CarGuesser</a>
+                </h3>
+            </div>
+        </div>*@
+</div>
+<h2 class="title2">Blogs</h2>
+<div class="row row-space">
+    <div class="row-moblie">
+        <div class="item-group">
+            <h3 class="project">
+                <a class="link" href="/aaaaa">
+                    aaaaa
+                </a>
+            </h3>
+        </div>
+    </div>
+</div>
+
+<script>
+    var toggle = true;
+    function togglePopup(element, set) {
+        let popup = element.childNodes[3];
+        toggle = set == null ? toggle : set;
+        if (toggle)
+            popup.classList.add("show");
+        else
+            popup.classList.remove("show");
+        toggle = !toggle;
+    }
+</script>

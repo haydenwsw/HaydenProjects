@@ -1,0 +1,86 @@
+﻿/* List */
+.itemList {
+    list-style-type: none;
+}
+
+h3 {
+    font: bold 20px/ Helvetica, Verdana, sans-serif;
+    color: snow;
+}
+
+h4 {
+    font: bold 20px/ Helvetica, Verdana, sans-serif;
+    color: snow;
+    margin-top: 15px;
+}
+li img {
+    float: left;
+    margin: 0 15px 0 0;
+}
+
+.listImage {
+    width: 200px;
+    height: 200px;
+    object-fit: cover;
+}
+
+@media (max-width: 767px) {
+    .listImage {
+        margin-right: 100%;
+    }
+}
+
+li p {
+    font: 200 14px Georgia, Times New Roman, serif;
+    color: snow;
+}
+
+.carItem {
+    padding: 5px;
+    overflow: auto;
+}
+
+    .carItem:hover {
+        background: lightgrey;
+        cursor: pointer;
+    }
+
+.list-group-item {
+    background-color: rgb(75, 75, 75);
+    display: flow-root;
+}
+
+.itemText {
+    margin-top: 15px;
+    list-style-type: none;
+    color: snow;
+    margin-bottom: 19px;
+}
+
+.itemText li {
+    display: inline;
+    margin-right: 10px;
+}
+
+.fa {
+    color: deepskyblue;
+}
+
+/* Page buttons */
+.pages {
+    display: flex;
+    padding-left: 550px;
+    list-style: none;
+    border-radius: .25rem;
+}
+
+.page-link {
+    position: relative;
+    display: block;
+    padding: .5rem .75rem;
+    margin-left: -1px;
+    line-height: 1.25;
+    color: snow;
+    background-color: rgb(75, 75, 75);
+    border: none;
+}

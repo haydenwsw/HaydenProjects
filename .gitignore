@@ -17,11 +17,11 @@
 mono_crash.*
 
 # CEF Sharp cache
-AutoHarvest/GPUCache/
-AutoHarvest/DawnCache/
+CarSearcher/GPUCache/
+CarSearcher/DawnCache/
 
 # remove user generated contents
-AutoHarvest/CarSearcher/
+HaydenProjects/CarSearcher/
 
 # Build results
 [Dd]ebug/

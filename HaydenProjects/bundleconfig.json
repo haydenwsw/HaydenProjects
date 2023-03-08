@@ -1,0 +1,32 @@
+[
+  {
+    "outputFileName": "#\\HaydenProjects\\HaydenProjects\\wwwroot\\css\\site.min.css",
+    "inputFiles": [
+      "#\\HaydenProjects\\HaydenProjects\\wwwroot\\css\\site.css"
+    ]
+  },
+  {
+    "outputFileName": "#\\HaydenProjects\\HaydenProjects\\wwwroot\\css\\carsearcher.min.css",
+    "inputFiles": [
+      "#\\HaydenProjects\\HaydenProjects\\wwwroot\\css\\carsearcher.css"
+    ]
+  },
+  {
+    "outputFileName": "#\\HaydenProjects\\HaydenProjects\\wwwroot\\css\\filterform.min.css",
+    "inputFiles": [
+      "#\\HaydenProjects\\HaydenProjects\\wwwroot\\css\\filterform.css"
+    ]
+  },
+  {
+    "outputFileName": "#\\HaydenProjects\\HaydenProjects\\wwwroot\\css\\index.min.css",
+    "inputFiles": [
+      "#\\HaydenProjects\\HaydenProjects\\wwwroot\\css\\index.css"
+    ]
+  },
+  {
+    "outputFileName": "#\\HaydenProjects\\HaydenProjects\\wwwroot\\js\\carsearcher.min.js",
+    "inputFiles": [
+      "#\\HaydenProjects\\HaydenProjects\\wwwroot\\js\\carsearcher.js"
+    ]
+  }
+]

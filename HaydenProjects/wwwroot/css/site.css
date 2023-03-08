@@ -1,0 +1,44 @@
+﻿/* Main */
+* {
+    margin: 0;
+    padding: 0;
+    color: snow;
+}
+
+.container {
+    max-width: 1140px;
+}
+
+.pb-3 {
+    padding-right: 10px;
+    padding-left: 10px;
+}
+
+body {
+    background-color: rgb(50, 50, 50);
+}
+
+.navbar {
+    background-color: rgb(64, 64, 64);
+}
+
+.navbar-brand {
+    color: snow;
+}
+
+.nav-link {
+    color: snow;
+}
+
+.border-top {
+    color: snow;
+}
+
+.center {
+    margin-left: auto;
+    margin-right: auto;
+}
+
+a:hover {
+    color: snow;
+}
