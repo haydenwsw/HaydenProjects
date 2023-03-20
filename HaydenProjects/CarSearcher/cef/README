@@ -1,0 +1,18 @@
+Find a matching version of the CEF
+Download the "Minimal Distribution" distribution from:
+https://cef-builds.spotifycdn.com/index.html
+and extract files to this directory and
+Copy cef/Resources/icudtl.dat into the cef/Release/ directory.
+
+Trouble shooting on linux:
+
+"System.DllNotFoundException: Can't load '<youre_cef_release_path>/libcef.so"
+export LD_PRELOAD=<youre_cef_release_path>/libcef.so:$LD_PRELOAD
+if you don't want set everytime, add to the end of file ~/.profile
+
+"System.DllNotFoundException: Unable to load shared library 'libdl'"
+whereis libdl.so.2
+sudo ln -sf <your_libdl.so.2_path> /usr/lib/libdl.so
+
+"System.DllNotFoundException: Unable to load shared library 'X11'"
+sudo apt-get install libx11-dev

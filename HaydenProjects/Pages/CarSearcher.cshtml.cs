@@ -5,7 +5,6 @@ using System.Threading.Tasks;
 using HaydenProjects.Singletons;
 using CarSearcher;
 using CarSearcher.Models;
-using CarSearcher.Models.Json;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.Logging;
@@ -79,7 +78,7 @@ namespace HaydenProjects.Pages
         public bool ShowNext => PageNum < 10 && Make != null && Model != null;
 
         // the icons for all the extra info
-        public static readonly string[] Icons = new string[3] { "fa fa-car", "fa fa-cog", "fa fa-wrench" };
+        public readonly string[] Icons = new string[3] { "fa fa-car", "fa fa-cog", "fa fa-wrench" };
 
         // the websites title
         public string Title;
@@ -101,7 +100,6 @@ namespace HaydenProjects.Pages
             CarSearcherConfig = carsearcherconfig.Value;
             Logger = logger;
             Title = events.GetTitle("Car Searcher");
-            Cars = new List<Car>();
         }
 
         public async Task OnGet()
@@ -109,10 +107,13 @@ namespace HaydenProjects.Pages
             try
             {
                 // get cars on make model or search
-                if (Make != null && Model != null)
+                if (Make != null && Model != null || Search != null)
                 {
                     // log activity
                     Logger.LogInformation("CarSearcher: {ipaddress} {url}", Request.HttpContext.Connection.RemoteIpAddress, Request.QueryString);
+
+                    if (!CarLookup.MakeModel.ContainsKey(Make) && !CarLookup.MakeModel.ContainsKey(Make))
+                        return;
 
                     FilterOptions filterOptions = new FilterOptions(Make, Model, Search, Sort, Trans, Min, Max,
                         Carsales, FbMarketplace, Gumtree, PageNum);

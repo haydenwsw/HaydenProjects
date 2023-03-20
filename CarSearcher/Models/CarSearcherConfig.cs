@@ -4,7 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace CarSearcher.Models.Json
+namespace CarSearcher.Models
 {
     public class CarSearcherConfig
     {
@@ -18,14 +18,9 @@ namespace CarSearcher.Models.Json
         public bool EnableFbMarketplace { get; set; }
         public bool EnableGumtree { get; set; }
 
-        public string GetMakeModelPath { get { return $"./{Folder}/{MakeModelFile}"; } }
-        public string GetFacebookCookiesPath { get { return $"./{Folder}/{FacebookCookiesFile}"; } }
-        public string GetMarketplaceKeysPath { get { return $"./{Folder}/{MarketplaceKeysFile}"; } }
-
-        public CarSearcherConfig()
-        {
-            // if the main folder doesn't exist create it
-            Directory.CreateDirectory($"./{Folder}");
-        }
+        public string FolderPath { get { return $"./{Folder}"; } }
+        public string GetMakeModelPath { get { return $"{FolderPath}/{MakeModelFile}"; } }
+        public string GetFacebookCookiesPath { get { return $"{FolderPath}/{FacebookCookiesFile}"; } }
+        public string GetMarketplaceKeysPath { get { return $"{FolderPath}/{MarketplaceKeysFile}"; } }
     }
 }

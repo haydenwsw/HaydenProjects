@@ -1,5 +1,4 @@
 ﻿using CarSearcher.Models;
-using CarSearcher.Models.Json;
 using CarSearcher.ExtensionFunctions;
 using CarSearcher.Exceptions;
 using HtmlAgilityPack;
@@ -18,19 +17,29 @@ namespace CarSearcher.Scrapers
     /// <summary>
     /// carsales.com webscrape
     /// </summary>
-    public class Carsales
+    public partial class Carsales
     {
         private readonly string Site = "https://www.carsales.com.au/";
         private readonly string[] SortBy = { "~Price", "Price", "LastUpdated", "~Odometer", "Odometer" };
         private readonly string[] Transmission = { "", "._.GenericGearType.Manual", "._.GenericGearType.Automatic" };
 
         private readonly HttpClient HttpClient;
+        private readonly STACefNetHeadless CefNetHeadless;
         private readonly CarLookup CarLookup;
         private readonly CarSearcherConfig CarSearcherConfig;
+
+        public Carsales(STACefNetHeadless cefnetheadless, CarLookup carLookup, CarSearcherConfig carsearcherconfig)
+        {
+            HttpClient = null;
+            CefNetHeadless = cefnetheadless;
+            CarSearcherConfig = carsearcherconfig;
+            CarLookup = carLookup;
+        }
 
         public Carsales(HttpClient httpclient, CarLookup carLookup, CarSearcherConfig carsearcherconfig)
         {
             HttpClient = httpclient;
+            CefNetHeadless = null;
             CarSearcherConfig = carsearcherconfig;
             CarLookup = carLookup;
         }
@@ -77,24 +86,7 @@ namespace CarSearcher.Scrapers
                     url = $"{Site}cars/?q=(And.Service.carsales._.CarAll.keyword({filterOptions.SearchTerm})._.State.New+South+Wales{filterOptions.GetTrans(Transmission)}{priceRange}.)&sort={filterOptions.GetSort(SortBy)}{pages}";
                 }
 
-                HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, url);
-
-                request.Headers.Add("User-Agent", CarSearcherConfig.UserAgent);
-                request.Headers.Add("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8");
-                request.Headers.Add("Accept-Language", "en-US,en;q=0.5");
-                request.Headers.Add("Referer", "https://www.carsales.com.au/");
-                request.Headers.Add("DNT", "1");
-                request.Headers.Add("Alt-Used", "www.carsales.com.au");
-                request.Headers.Add("Connection", "keep-alive");
-                request.Headers.Add("Upgrade-Insecure-Requests", "1");
-                request.Headers.Add("Sec-Fetch-Dest", "document");
-                request.Headers.Add("Sec-Fetch-Mode", "navigate");
-                request.Headers.Add("Sec-Fetch-Site", "same-origin");
-                request.Headers.Add("TE", "trailers");
-
-                HttpResponseMessage response = await HttpClient.SendAsync(request);
-                response.EnsureSuccessStatusCode();
-                string html = await response.Content.ReadAsStringAsync();
+                string html = CefNetHeadless.NewTabGetHtml(url);
 
                 // Load HTML doc
                 HtmlDocument htmlDocument = new HtmlDocument();
@@ -240,124 +232,5 @@ namespace CarSearcher.Scrapers
                 }
             }
         }
-
-        #region model for makemodel
-        private class CarsalesMakeModel
-        {
-            [JsonProperty("version")]
-            public long Version { get; set; }
-
-            [JsonProperty("heading")]
-            public string Heading { get; set; }
-
-            [JsonProperty("subHeading")]
-            public string SubHeading { get; set; }
-
-            [JsonProperty("searchButtonUrl")]
-            public string SearchButtonUrl { get; set; }
-
-            [JsonProperty("searchButtonText")]
-            public string SearchButtonText { get; set; }
-
-            [JsonProperty("disableSearch")]
-            public bool DisableSearch { get; set; }
-
-            [JsonProperty("expression")]
-            public string Expression { get; set; }
-
-            [JsonProperty("tenant")]
-            public string Tenant { get; set; }
-
-            [JsonProperty("searchUrl")]
-            public string SearchUrl { get; set; }
-
-            [JsonProperty("formReset")]
-            public bool FormReset { get; set; }
-
-            [JsonProperty("primaryFields")]
-            public PrimaryField[] PrimaryFields { get; set; }
-
-            [JsonProperty("secondaryFields")]
-            public SecondaryField[] SecondaryFields { get; set; }
-        }
-
-        private class PrimaryField
-        {
-            [JsonProperty("type")]
-            public string Type { get; set; }
-
-            [JsonProperty("defaultValue")]
-            public string DefaultValue { get; set; }
-
-            [JsonProperty("values")]
-            public Value[] Values { get; set; }
-
-            [JsonProperty("name")]
-            public string Name { get; set; }
-
-            [JsonProperty("title")]
-            public string Title { get; set; }
-
-            [JsonProperty("expression")]
-            public string Expression { get; set; }
-
-            [JsonProperty("removeAction")]
-            public string RemoveAction { get; set; }
-
-            [JsonProperty("noValueText")]
-            public string NoValueText { get; set; }
-
-            [JsonProperty("emphasis")]
-            public bool Emphasis { get; set; }
-        }
-
-        private class Value
-        {
-            [JsonProperty("type")]
-            public string Type { get; set; }
-
-            [JsonProperty("displayValue", NullValueHandling = NullValueHandling.Ignore)]
-            public string DisplayValue { get; set; }
-
-            [JsonProperty("value", NullValueHandling = NullValueHandling.Ignore)]
-            public string ValueValue { get; set; }
-        }
-
-        private class SecondaryField
-        {
-            [JsonProperty("type")]
-            public string Type { get; set; }
-
-            [JsonProperty("defaultValue", NullValueHandling = NullValueHandling.Ignore)]
-            public string DefaultValue { get; set; }
-
-            [JsonProperty("fromTitle", NullValueHandling = NullValueHandling.Ignore)]
-            public string FromTitle { get; set; }
-
-            [JsonProperty("toTitle", NullValueHandling = NullValueHandling.Ignore)]
-            public string ToTitle { get; set; }
-
-            [JsonProperty("values", NullValueHandling = NullValueHandling.Ignore)]
-            public Value[] Values { get; set; }
-
-            [JsonProperty("name")]
-            public string Name { get; set; }
-
-            [JsonProperty("title")]
-            public string Title { get; set; }
-
-            [JsonProperty("expression")]
-            public string Expression { get; set; }
-
-            [JsonProperty("removeAction")]
-            public string RemoveAction { get; set; }
-
-            [JsonProperty("emphasis")]
-            public bool Emphasis { get; set; }
-
-            [JsonProperty("noValueText", NullValueHandling = NullValueHandling.Ignore)]
-            public string NoValueText { get; set; }
-        }
-        #endregion
     }
 }

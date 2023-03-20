@@ -16,12 +16,14 @@
 # Mono auto generated files
 mono_crash.*
 
-# CEF Sharp cache
-CarSearcher/GPUCache/
-CarSearcher/DawnCache/
+# CEF cache
+HaydenProjects/GPUCache/
 
 # remove user generated contents
-HaydenProjects/CarSearcher/
+HaydenProjects/CarSearcher/*.*
+HaydenProjects/CarSearcher/cef/*
+ 
+!HaydenProjects/CarSearcher/cef/README
 
 # Build results
 [Dd]ebug/

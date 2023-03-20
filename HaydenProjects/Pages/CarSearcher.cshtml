@@ -17,33 +17,32 @@
         <div class="card-body">
             <div class="row-6 row-space">
                 <div class="col--2">
-                    <div class="input-group-1">
-                        <select id="selectMake" class="input--style-1" name="Make" asp-for="Make" onchange="getModels()" style="width: 100%">
+                    <div class="input-group-2">
+                        <input id="selectMake" class="input--style-1" name="Make" type="text" asp-for="Make" value=@(@Model.Make == null ? "All Makes" : @Model.Make) data-toggle="dropdown" placeholder="All Makes" autocomplete="off" style="border-radius: 5px 0 0 5px;">
+                        <button id="makeDropdownBtn" class="input--style-1 dropdown-btns" type="button" style="border-radius: 0px 5px 5px 0px; ">⌄</button>
+                        <div id="selectMakeDropdown" class="dropdown-menu scrollable-menu input--style-1">
                             @foreach (string key in Model.CarLookup.MakeModel.Keys)
                             {
-                                <option value=@key>@key</option>
+                                <button class="droplist-item input--style-1" type="button">@key</button>
                             }
-                        </select>
+                        </div>
                     </div>
                 </div>
                 <div class="col--2">
-                    <div class="input-group-1">
-                        <select id="selectModel" class="input--style-1" name="Model" asp-for="Model" onchange="clearSearch()" style="width: 100%">
-                            @{
-                                string make = Model.Make != null ? Model.Make : "All Makes";
-                                foreach (string key in Model.CarLookup.MakeModel[make].Item2.Keys)
-                                {
-                                    <option value=@key>@key</option>
-                                }
-                            }
-                        </select>
+                    <div class="input-group-2">
+                        <input id="selectModel" class="input--style-1" name="Model" type="text" asp-for="Model" value=@(@Model.Model == null ? "All Models" : @Model.Model) data-toggle="dropdown" placeholder="All Models" autocomplete="off" style="border-radius: 5px 0 0 5px;">
+                        <button id="modelDropdownBtn" class="input--style-1 dropdown-btns" type="button" style="border-radius: 0px 5px 5px 0px;">⌄</button>
+                        <div id="selectModelDropdown" class="dropdown-menu scrollable-menu input--style-1">
+                            <button id="allModels" class="droplist-item input--style-1" type="button" onclick="$('#selectModelDropdown .droplist-item').show();" onmouseover="$('#selectModel').val(this.innerText); modelText = this.innerText;">All Models</button>
+                        </div>
                     </div>
                 </div>
             </div>
             <div class="row-6 row-space">
                 <div class="col--1">
-                    <div class="input-group-1">
-                        <input id="SearchTerm" class="input--style-1" type="text" name="Search" placeholder="Keywords" asp-for="Search" value=@Model.Search onkeydown="clearMakeModel()">
+                    <div class="input-group-2">
+                        <input id="SearchTerm" class="input--style-1" type="text" name="Search" placeholder="Keywords" asp-for="Search" value=@Model.Search onkeydown="clearMakeModel()" style="border-radius: 5px 0 0 5px;">
+                        <button id="searchClearBtn" class="input--style-1 dropdown-btns" type="button" style="border-radius: 0px 5px 5px 0px;">✕</button>
                     </div>
                 </div>
             </div>
@@ -52,8 +51,7 @@
         <div class="card-body">
             <div class="row-6 row-space">
                     <div class="input-group-1">
-                        <select id="selectSort" class="input--style-1" asp-for="Sort"
-                                onchange="sortList(document.getElementById('itemList'), document.getElementById('selectSort').selectedIndex)">
+                        <select id="selectSort" class="input--style-1" asp-for="Sort" onchange="sortList($('#selectSort').index()">
                             <option value=0>Price Low to High</option>
                             <option value=1>Price High to Low</option>
                             <option value=2>Unsorted</option>
@@ -76,13 +74,63 @@
             </div>
             <div class="row-6 row-space">
                 <div class="col--2">
-                    <div class="input-group-1">
-                        <input class="input--style-1" type="text" placeholder="Min Price" asp-for="Min" value=@Model.Min onkeydown="return (!(event.keyCode>=65) && event.keyCode!=32);">
+                    <div class="input-group-2">
+                        <input id="minPrice" class="input--style-1" type="text" data-toggle="dropdown" placeholder="Min Price" asp-for="Min" value=@Model.Min autocomplete="off" style="border-radius: 5px 0 0 5px;">
+                        <button id="minPriceDropdownBtn" class="input--style-1 dropdown-btns" type="button" style="border-radius: 0px 5px 5px 0px; ">⌄</button>
+                        <div id="minPriceDropdown" class="dropdown-menu scrollable-menu input--style-1">
+                            <button class="droplist-item input--style-1" type="button">1000</button>
+                            <button class="droplist-item input--style-1" type="button">2000</button>
+                            <button class="droplist-item input--style-1" type="button">3000</button>
+                            <button class="droplist-item input--style-1" type="button">4000</button>
+                            <button class="droplist-item input--style-1" type="button">5000</button>
+                            <button class="droplist-item input--style-1" type="button">7500</button>
+                            <button class="droplist-item input--style-1" type="button">10000</button>
+                            <button class="droplist-item input--style-1" type="button">15000</button>
+                            <button class="droplist-item input--style-1" type="button">20000</button>
+                            <button class="droplist-item input--style-1" type="button">25000</button>
+                            <button class="droplist-item input--style-1" type="button">30000</button>
+                            <button class="droplist-item input--style-1" type="button">35000</button>
+                            <button class="droplist-item input--style-1" type="button">40000</button>
+                            <button class="droplist-item input--style-1" type="button">45000</button>
+                            <button class="droplist-item input--style-1" type="button">50000</button>
+                            <button class="droplist-item input--style-1" type="button">60000</button>
+                            <button class="droplist-item input--style-1" type="button">70000</button>
+                            <button class="droplist-item input--style-1" type="button">80000</button>
+                            <button class="droplist-item input--style-1" type="button">90000</button>
+                            <button class="droplist-item input--style-1" type="button">100000</button>
+                            <button class="droplist-item input--style-1" type="button">150000</button>
+                            <button class="droplist-item input--style-1" type="button">200000</button>
+                        </div>
                     </div>
                 </div>
                 <div class="col--2">
-                    <div class="input-group-1">
-                        <input class="input--style-1" type="text" placeholder="Max Price" asp-for="Max" value=@Model.Max onkeydown="return (!(event.keyCode>=65) && event.keyCode!=32);">
+                    <div class="input-group-2">
+                        <input id="maxPrice" class="input--style-1" type="text" data-toggle="dropdown" placeholder="Max Price" asp-for="Max" value=@Model.Max autocomplete="off" style="border-radius: 5px 0 0 5px;">
+                        <button id="maxPriceDropdownBtn" class="input--style-1 dropdown-btns" type="button" style="border-radius: 0px 5px 5px 0px; ">⌄</button>
+                        <div id="maxPriceDropdown" class="dropdown-menu scrollable-menu input--style-1">
+                            <button class="droplist-item input--style-1" type="button">1000</button>
+                            <button class="droplist-item input--style-1" type="button">2000</button>
+                            <button class="droplist-item input--style-1" type="button">3000</button>
+                            <button class="droplist-item input--style-1" type="button">4000</button>
+                            <button class="droplist-item input--style-1" type="button">5000</button>
+                            <button class="droplist-item input--style-1" type="button">7500</button>
+                            <button class="droplist-item input--style-1" type="button">10000</button>
+                            <button class="droplist-item input--style-1" type="button">15000</button>
+                            <button class="droplist-item input--style-1" type="button">20000</button>
+                            <button class="droplist-item input--style-1" type="button">25000</button>
+                            <button class="droplist-item input--style-1" type="button">30000</button>
+                            <button class="droplist-item input--style-1" type="button">35000</button>
+                            <button class="droplist-item input--style-1" type="button">40000</button>
+                            <button class="droplist-item input--style-1" type="button">45000</button>
+                            <button class="droplist-item input--style-1" type="button">50000</button>
+                            <button class="droplist-item input--style-1" type="button">60000</button>
+                            <button class="droplist-item input--style-1" type="button">70000</button>
+                            <button class="droplist-item input--style-1" type="button">80000</button>
+                            <button class="droplist-item input--style-1" type="button">90000</button>
+                            <button class="droplist-item input--style-1" type="button">100000</button>
+                            <button class="droplist-item input--style-1" type="button">150000</button>
+                            <button class="droplist-item input--style-1" type="button">200000</button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -131,45 +179,52 @@
 </form>
 
 <div>
-    <ul id="itemList" class="itemList">
-        @foreach (var car in Model.Cars)
-        {
-            <li class="carItem">
-                <a href="@car.Link" class="list-group-item">
-                    <img class="listImage" src="@car.ImgUrl" alt="This listing has no image">
-                    <h3>@car.Name</h3>
-                    <h4><i class="fa fa-usd"></i> <i class="price">@car.Price</i></h4>
+    @if (Model.Cars != null)
+    {
+        <ul id="itemList" class="itemList">
+            @foreach (var car in Model.Cars)
+            {
+                <li class="carItem">
+                    <a href="@car.Link" class="list-group-item">
+                        <img class="listImage" src="@car.ImgUrl" alt="This listing has no image">
+                        <h3>@car.Name</h3>
+                        <h4><i class="fa fa-usd"></i> <i class="price">@car.Price</i></h4>
 
-                    <ul class="itemText">
-                        <li style="display: inline;"> <i class="fa fa-line-chart"></i> <i class="KMs">@car.KMs KM</i></li>
-                        @if (car.ExtraInfo != null)
-                        {
-                            @for (int i = 0; i < car.ExtraInfo.Length; i++)
+                        <ul class="itemText">
+                            <li style="display: inline;"> <i class="fa fa-line-chart"></i> <i class="KMs">@car.KMs KM</i></li>
+                            @if (car.ExtraInfo != null)
                             {
-                                @if (car.ExtraInfo[i] != null)
+                                @for (int i = 0; i < car.ExtraInfo.Length; i++)
                                 {
-                                    <li class="extraInfo"> <i class="Model.Icons[i]"></i> <i>@car.ExtraInfo[i]</i></li>
+                                    @if (car.ExtraInfo[i] != null)
+                                    {
+                                        <li class="extraInfo"> <i class="@Model.Icons[i]"></i> <i>@car.ExtraInfo[i]</i></li>
+                                    }
                                 }
                             }
-                        }
 
-                    </ul>
-                    @switch (car.Source)
-                    {
-                        case Source.Carsales:
-                            <img src="~/logos/Carsales.png" asp-append-version="true" alt="logo" width=174 height=64 />
-                            break;
-                        case Source.FbMarketplace:
-                            <img src="~/logos/FbMarketplace.png" asp-append-version="true" alt="logo" width=64 height=64 />
-                            break;
-                        case Source.Gumtree:
-                            <img src="~/logos/Gumtree.jpg" asp-append-version="true" alt="logo" width=90 height=64 />
-                            break;
-                    }
-                </a>
-            </li>
+                        </ul>
+                        @switch (car.Source)
+                        {
+                            case Source.Carsales:
+                                <img src="~/logos/Carsales.png" asp-append-version="true" alt="logo" width=174 height=64 />
+                                break;
+                            case Source.FbMarketplace:
+                                <img src="~/logos/FbMarketplace.png" asp-append-version="true" alt="logo" width=64 height=64 />
+                                break;
+                            case Source.Gumtree:
+                                <img src="~/logos/Gumtree.jpg" asp-append-version="true" alt="logo" width=90 height=64 />
+                                break;
+                        }
+                    </a>
+                </li>
+            }
+        </ul>
+        @if (Model.Cars.Count() == 0)
+        {
+            <h1 style="text-align: center;">No Results :(</h1>
         }
-    </ul>
+    }
 </div>
 
 <div>
@@ -183,8 +238,8 @@
                    asp-route-Gumtree="@Model.Gumtree" asp-route-PageNum="@(Model.PageNum - 1)" class="page-link">Previous Page</a>
             </li>
         }
-                        @if (Model.ShowNext)
-                        {
+        @if (Model.ShowNext)
+        {
             <li class="page-item">
                 <a asp-page="" asp-route-Make="@Model.Make" asp-route-Model="@Model.Model" asp-route-Search="@Model.Search"
                    asp-route-Sort="@Model.Sort" asp-route-Trans="@Model.Trans" asp-route-Min="@Model.Min" asp-route-Max="@Model.Max"

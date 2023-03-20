@@ -11,7 +11,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.AspNetCore.HttpOverrides;
 using AspNetCoreRateLimit;
 using HaydenProjects.Singletons;
-using CarSearcher.Models.Json;
+using CarSearcher.Models;
 using CarSearcher;
 
 namespace HaydenProjects
@@ -39,6 +39,7 @@ namespace HaydenProjects
             // add car searcher
             services.AddSingleton<CarLookup>();
             services.AddSingleton<CarWrapper>();
+            services.AddSingleton<STACefNetHeadless>();
 
             // add the event class
             services.AddSingleton<Events>();

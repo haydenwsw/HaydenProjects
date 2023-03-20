@@ -25,9 +25,10 @@ namespace HaydenProjects.Pages.Api
         [HttpPost]
         public JsonResult OnPost([MaxLength(25)] string make)
         {
-            if (CarLookup.MakeModel.ContainsKey(make))
+            if (make != null && CarLookup.MakeModel.ContainsKey(make))
             {
-                return new JsonResult(CarLookup.MakeModel[make].Item2.Keys);
+                // skip the "All Models" string and return
+                return new JsonResult(CarLookup.MakeModel[make].Item2.Keys.Skip(1));
             }
 
             return new JsonResult(Ok());

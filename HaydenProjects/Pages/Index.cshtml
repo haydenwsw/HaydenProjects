@@ -7,7 +7,6 @@
 <link rel="stylesheet" href="~/css/index.css">
 
 <h1 class="title">Hayden Projects</h1>
-<h2 class="title2">Tools</h2>
 <div class="row row-space">
     <div class="row-moblie">
         <div class="item-group">
@@ -16,9 +15,9 @@
                     <img src="~/icons/CarSearcher.ico" width=32 height=32>
                     CarSearcher
                 </a>
-                <a class="popup" onclick="togglePopup(this, null)" onmouseover="togglePopup(this, true)" onmouseout="togglePopup(this, false)">
+                <a class="tip" onclick="toggleTooltip(this, null)" onmouseover="toggleTooltip(this, true)" onmouseout="toggleTooltip(this, false)">
                     <i class="fa fa-info-circle"></i>
-                    <span class="popuptext">Combinds the 3 car used car websites Carsale, Facebook Marketplace and Gumtree into one place</span>
+                    <span class="tooltiptext">Combinds the 3 car used car websites Carsale, Facebook Marketplace and Gumtree into one place</span>
                 </a>
             </h3>
         </div>
@@ -38,7 +37,7 @@
             </div>
         </div>*@
 </div>
-<h2 class="title2">Blogs</h2>
+@*<h2 class="title">Blogs</h2>
 <div class="row row-space">
     <div class="row-moblie">
         <div class="item-group">
@@ -49,17 +48,17 @@
             </h3>
         </div>
     </div>
-</div>
+</div>*@
 
 <script>
     var toggle = true;
-    function togglePopup(element, set) {
-        let popup = element.childNodes[3];
+    function toggleTooltip(element, set) {
+        let tooltip = element.childNodes[3];
         toggle = set == null ? toggle : set;
         if (toggle)
-            popup.classList.add("show");
+            tooltip.classList.add("show");
         else
-            popup.classList.remove("show");
+            tooltip.classList.remove("show");
         toggle = !toggle;
     }
 </script>

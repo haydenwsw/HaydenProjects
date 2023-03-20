@@ -3,11 +3,6 @@
     margin-bottom: 40px;
 }
 
-.title2 {
-    text-align: center;
-    margin-bottom: 40px;
-}
-
 .project {
     border: 10px solid rgb(75, 75, 75);
     background: rgb(75, 75, 75);
@@ -72,8 +67,8 @@
     color: snow;
 }
 
-/* The actual popup */
-.popup .popuptext {
+/* The actual tooltip */
+.tip .tooltiptext {
     visibility: hidden;
     width: 200px;
     background-color: #555;
@@ -89,8 +84,8 @@
     margin-left: -100px;
 }
 
-/* Popup container - can be anything you want */
-.popup {
+/* tooltip container */
+.tip {
     position: relative;
     display: inline-block;
     cursor: pointer;
@@ -100,8 +95,8 @@
     user-select: none;
 }
 
-/* Popup arrow */
-.popup .popuptext::after {
+/* tooltip arrow */
+.tip .tooltiptext::after {
     content: "";
     position: absolute;
     top: 100%;
@@ -112,7 +107,7 @@
     border-color: #555 transparent transparent transparent;
 }
 
-/* Toggle this class - hide and show the popup */
-.popup .show {
+/* Toggle this class - hide and show the tooltip */
+.tip .show {
     visibility: visible;
 }

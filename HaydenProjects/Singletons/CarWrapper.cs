@@ -1,6 +1,5 @@
 ﻿using CarSearcher;
 using CarSearcher.Models;
-using CarSearcher.Models.Json;
 using CarSearcher.Scrapers;
 using HaydenProjects.Pages;
 using Microsoft.Extensions.Logging;
@@ -29,11 +28,11 @@ namespace HaydenProjects.Singletons
 
         private readonly ILogger<CarWrapper> Logger;
 
-        public CarWrapper(IHttpClientFactory httpclientfactory, IOptions<CarSearcherConfig> carsearcherconfig, CarLookup carlookup, ILogger<CarWrapper> logger)
+        public CarWrapper(IHttpClientFactory httpclientfactory, STACefNetHeadless cefnetheadless, IOptions<CarSearcherConfig> carsearcherconfig, CarLookup carlookup, ILogger<CarWrapper> logger)
         {
             CarSearcherConfig = carsearcherconfig.Value;
 
-            Carsales = new Carsales(httpclientfactory.CreateClient(), carlookup, CarSearcherConfig);
+            Carsales = new Carsales(cefnetheadless, carlookup, CarSearcherConfig);
             FbMarketplace = new FbMarketplace(httpclientfactory.CreateClient(), carlookup, CarSearcherConfig);
             Gumtree = new Gumtree(httpclientfactory.CreateClient(), carlookup, CarSearcherConfig);
 
@@ -95,8 +94,10 @@ namespace HaydenProjects.Singletons
 
             if (returnCars[0] != null && returnCars[0].Count == 0)
                 Logger.LogInformation("Carsales ScrapeCars has no listings. FilterOptions: {FilterOptions}", filterOptions);
+
             if (returnCars[1] != null && returnCars[1].Count == 0)
                 Logger.LogInformation("FbMarketplace ScrapeCars has no listings. FilterOptions: {FilterOptions}", filterOptions);
+
             if (returnCars[2] != null && returnCars[2].Count == 0)
                 Logger.LogInformation("Gumtree ScrapeCars has no listings. FilterOptions: {FilterOptions}", filterOptions);
 

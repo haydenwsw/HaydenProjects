@@ -1,5 +1,4 @@
 ﻿using CarSearcher.Models;
-using CarSearcher.Models.Json;
 using CarSearcher.Scrapers;
 using Microsoft.Extensions.Options;
 using System;
@@ -32,7 +31,7 @@ namespace CarSearcher
                 if (CarSearcherConfig.GenerateMakeModelFile)
                     GenerateMakeModel(httpclientfactory.CreateClient());
                 else
-                    throw new Exception("GenerateMakeModelFile is set to false"); // illegal exception raising
+                    throw new FileNotFoundException("MakeModel.json is missing and GenerateMakeModelFile is set to false");
 
             string json = File.ReadAllText(CarSearcherConfig.GetMakeModelPath);
             MakeModel = JsonConvert.DeserializeObject<Dictionary<string, (CarKeys, Dictionary<string, CarKeys>)>>(json);
@@ -50,9 +49,9 @@ namespace CarSearcher
             string json;
 
             var carsalesMakeModel = new Dictionary<string, (string, List<(string, string)>)>();
-            if (File.Exists($"./{CarSearcherConfig.Folder}/carsale.json"))
+            if (File.Exists($"{CarSearcherConfig.FolderPath}/carsale.json"))
             {
-                json = File.ReadAllText($"./{CarSearcherConfig.Folder}/carsale.json");
+                json = File.ReadAllText($"{CarSearcherConfig.FolderPath}/carsale.json");
                 carsalesMakeModel = JsonConvert.DeserializeObject<Dictionary<string, (string, List<(string, string)>)>>(json);
             }
             else
@@ -62,13 +61,13 @@ namespace CarSearcher
                 // i manually removed the "S Type" entrie in "Jaguar" in carsale.json because it conflicted with the "S-Type" entry
                 carsalesMakeModel["Jaguar"].Item2.Remove(("Model.S-Type", "S-Type"));
                 json = JsonConvert.SerializeObject(carsalesMakeModel, Formatting.Indented);
-                File.WriteAllText($"./{CarSearcherConfig.Folder}/carsale.json", json);
+                File.WriteAllText($"{CarSearcherConfig.FolderPath}/carsale.json", json);
             }
 
             var fbmarketplaceMakeModel = new Dictionary<string, (string, List<(string, string)>)>();
-            if (File.Exists($"./{CarSearcherConfig.Folder}/fbmarketplace.json"))
+            if (File.Exists($"{CarSearcherConfig.FolderPath}/fbmarketplace.json"))
             {
-                json = File.ReadAllText($"./{CarSearcherConfig.Folder}/fbmarketplace.json");
+                json = File.ReadAllText($"{CarSearcherConfig.FolderPath}/fbmarketplace.json");
                 fbmarketplaceMakeModel = JsonConvert.DeserializeObject<Dictionary<string, (string, List<(string, string)>)>>(json);
             }
             else
@@ -76,13 +75,13 @@ namespace CarSearcher
                 FbMarketplace fbmarketplace = new FbMarketplace(httpClient, this, CarSearcherConfig);
                 fbmarketplace.GetMakeModel(fbmarketplaceMakeModel).Wait();
                 json = JsonConvert.SerializeObject(fbmarketplaceMakeModel, Formatting.Indented);
-                File.WriteAllText($"./{CarSearcherConfig.Folder}/fbmarketplace.json", json);
+                File.WriteAllText($"{CarSearcherConfig.FolderPath}/fbmarketplace.json", json);
             }
 
             var gumtreeMakeModel = new Dictionary<string, (string, List<(string, string)>)>();
-            if (File.Exists($"./{CarSearcherConfig.Folder}/gumtree.json"))
+            if (File.Exists($"{CarSearcherConfig.FolderPath}/gumtree.json"))
             {
-                json = File.ReadAllText($"./{CarSearcherConfig.Folder}/gumtree.json");
+                json = File.ReadAllText($"{CarSearcherConfig.FolderPath}/gumtree.json");
                 gumtreeMakeModel = JsonConvert.DeserializeObject<Dictionary<string, (string, List<(string, string)>)>>(json);
             }
             else
@@ -90,7 +89,7 @@ namespace CarSearcher
                 Gumtree gumtree = new Gumtree(httpClient, this, CarSearcherConfig);
                 gumtree.GetMakeModel(gumtreeMakeModel).Wait();
                 json = JsonConvert.SerializeObject(gumtreeMakeModel, Formatting.Indented);
-                File.WriteAllText($"./{CarSearcherConfig.Folder}/gumtree.json", json);
+                File.WriteAllText($"{CarSearcherConfig.FolderPath}/gumtree.json", json);
             }
 
             var countDictionary = new Dictionary<string, SuperValue>();
@@ -162,11 +161,11 @@ namespace CarSearcher
 
             // throw if they're more then 3 makes
             if (countDictionary.Any(x => x.Value.Count > 3))
-                throw new Exception("They're more than 3 makes!");
+                throw new IndexOutOfRangeException("They're more than 3 makes!");
 
             // throw if they're more then 3 models
             if (countDictionary.SelectMany(x => x.Value.ModelDict).Any(y => y.Value.Count > 3))
-                throw new Exception("They're more than 3 models!");
+                throw new IndexOutOfRangeException("They're more than 3 models!");
 
             // combind into mega dictionary
             var masterDictionary = countDictionary.Where(x => x.Value.Count == 3)

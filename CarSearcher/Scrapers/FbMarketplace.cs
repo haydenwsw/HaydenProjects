@@ -1,5 +1,4 @@
 ﻿using CarSearcher.Models;
-using CarSearcher.Models.Json;
 using CarSearcher.ExtensionFunctions;
 using CarSearcher.Exceptions;
 using HtmlAgilityPack;
@@ -24,12 +23,16 @@ namespace CarSearcher.Scrapers
         // the urls for scraping
         private readonly string Site = "https://www.facebook.com/marketplace/";
         private readonly string Url = "https://www.facebook.com/api/graphql/";
+
+        // for Make Model selection
         private readonly FilterSortingParams[] SortBy = { new FilterSortingParams { SortByFilter = "PRICE_AMOUNT", SortOrder = "ASCEND" }, new FilterSortingParams { SortByFilter = "PRICE_AMOUNT", SortOrder = "DESCEND" }, new FilterSortingParams { SortByFilter = "CREATION_TIME", SortOrder = "DESCEND" }, new FilterSortingParams { SortByFilter = "VEHICLE_MILEAGE", SortOrder = "ASCEND" }, new FilterSortingParams { SortByFilter = "VEHICLE_MILEAGE", SortOrder = "DESCEND" } };
         private readonly NumericVerticalField[][] Transmission = { new NumericVerticalField[0], new NumericVerticalField[1] { new NumericVerticalField { Name = "is_manual_transmission", Value = 1 } }, new NumericVerticalField[1] { new NumericVerticalField { Name = "is_manual_transmission", Value = 0 } } };
 
+        // for Search
         private readonly string[] SortBy2 = { "PRICE_ASCEND", "PRICE_DESCEND", "CREATION_TIME_DESCEND", "VEHICLE_MILEAGE_ASCEND", "VEHICLE_MILEAGE_DESCEND" };
         private readonly string[][] Transmission2 = { null, new string[1] { "MANUAL" }, new string[1] { "AUTOMATIC" } };
 
+        // request data
         private readonly string Cookie = null;
         private readonly string X_ASBD_ID = null;
         private FbMarketplaceRequest MarketplaceRequest;
@@ -239,6 +242,9 @@ namespace CarSearcher.Scrapers
                 HttpResponseMessage response = await HttpClient.SendAsync(request);
                 response.EnsureSuccessStatusCode();
                 string json = await response.Content.ReadAsStringAsync();
+
+                if (json == "")
+                    return await Task.FromException<List<Car>>(new FbMarketplaceException($"FbMarketplace GetCars has failed. The request parameters are invaild, out dated cookies? FilterOptions: {fbMarketplaceVariables.ToJson()}"));
 
                 FbMarketplaceResponse fbMarketplaceResponse = JsonConvert.DeserializeObject<FbMarketplaceResponse>(json);
 

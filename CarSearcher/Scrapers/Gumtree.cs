@@ -1,5 +1,4 @@
 ﻿using CarSearcher.Models;
-using CarSearcher.Models.Json;
 using CarSearcher.ExtensionFunctions;
 using CarSearcher.Exceptions;
 using HtmlAgilityPack;
