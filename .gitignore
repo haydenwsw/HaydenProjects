@@ -25,6 +25,8 @@ HaydenProjects/CarSearcher/cef/*
  
 !HaydenProjects/CarSearcher/cef/README
 
+HaydenProjects/.config/
+
 # Build results
 [Dd]ebug/
 [Dd]ebugPublic/

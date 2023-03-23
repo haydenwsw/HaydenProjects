@@ -75,7 +75,7 @@ namespace HaydenProjects.Pages
 
         // page number properties
         public bool ShowPrevious => PageNum > 1;
-        public bool ShowNext => PageNum < 10 && Make != null && Model != null;
+        public bool ShowNext => PageNum < 10 && Make != null && Model != null || Search != null;
 
         // the icons for all the extra info
         public readonly string[] Icons = new string[3] { "fa fa-car", "fa fa-cog", "fa fa-wrench" };
@@ -112,7 +112,8 @@ namespace HaydenProjects.Pages
                     // log activity
                     Logger.LogInformation("CarSearcher: {ipaddress} {url}", Request.HttpContext.Connection.RemoteIpAddress, Request.QueryString);
 
-                    if (!CarLookup.MakeModel.ContainsKey(Make) && !CarLookup.MakeModel.ContainsKey(Make))
+                    // verify the inputs
+                    if (!CarLookup.MakeModel.ContainsKey(Make) && !CarLookup.MakeModel.ContainsKey(Model))
                         return;
 
                     FilterOptions filterOptions = new FilterOptions(Make, Model, Search, Sort, Trans, Min, Max,

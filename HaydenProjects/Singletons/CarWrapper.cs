@@ -39,7 +39,11 @@ namespace HaydenProjects.Singletons
             Logger = logger;
         }
 
-        // get all the car listing from the websties asynchronously
+        /// <summary>
+        /// Get all the car listing from the websties asynchronously
+        /// </summary>
+        /// <param name="filterOptions"></param>
+        /// <returns></returns>
         public async Task<List<Car>> GetCarsAsync(FilterOptions filterOptions)
         {
             // scrape carsales based on toggle

@@ -8,7 +8,7 @@ Trouble shooting on linux:
 
 "System.DllNotFoundException: Can't load '<youre_cef_release_path>/libcef.so"
 export LD_PRELOAD=<youre_cef_release_path>/libcef.so:$LD_PRELOAD
-if you don't want set everytime, add to the end of file ~/.profile
+if you don't want set everytime, add to the end of file ~/.bashrc
 
 "System.DllNotFoundException: Unable to load shared library 'libdl'"
 whereis libdl.so.2

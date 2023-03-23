@@ -55,6 +55,8 @@ namespace CarSearcher
         /// <summary>
         /// Initialize Chromium
         /// </summary>
+        /// <param name="carsearcherconfig"></param>
+        /// <param name="logger"></param>
         public STACefNetHeadless(IOptions<CarSearcherConfig> carsearcherconfig, ILogger<STACefNetHeadless> logger)
         {
             // get project path
@@ -68,7 +70,8 @@ namespace CarSearcher
                 NoSandbox = true,
                 WindowlessRenderingEnabled = true,
                 LocalesDirPath = Path.Combine(cefPath, "Resources", "locales"),
-                ResourcesDirPath = Path.Combine(cefPath, "Resources")
+                ResourcesDirPath = Path.Combine(cefPath, "Resources"),
+                LogSeverity = CefLogSeverity.Error
             };
 
             // Copy cef/Resources/icudtl.dat into cef/Release/
@@ -80,46 +83,9 @@ namespace CarSearcher
             Ids = 0;
             PageDict = new Dictionary<long, Page>(); ;
 
-            Thread thread = new Thread(() =>
-            {
-                app.Initialize(Path.Combine(cefPath, "Release"), settings);
-                isDone = ManualResetEvent.Reset();
-                ManualResetEvent.WaitOne();
+            // setup thread
+            Thread thread = new Thread(() => CefNetMain(app, cefPath, settings, ref isDone, logger));
 
-                while (true)
-                {
-                    try
-                    {
-                        Page page = PageDict.FirstOrDefault().Value;
-
-                        WindowlessWebView tab = new WindowlessWebView();
-                        SpinWait.SpinUntil(() => { CefApi.DoMessageLoopWork(); return !tab.IsBusy; });
-
-                        tab.Navigate(page.Url);
-
-                        SpinWait.SpinUntil(() => { CefApi.DoMessageLoopWork(); return !tab.BrowserObject.IsLoading; });
-
-                        Task<string> task = tab.GetMainFrame().GetSourceAsync(CancellationToken.None);
-                        SpinWait.SpinUntil(() => { CefApi.DoMessageLoopWork(); return task.IsCompleted; });
-
-                        page.Html = task.Result;
-                        tab.Close();
-
-                        if (PageDict.FirstOrDefault().Value == null)
-                        {
-                            PageDict.TrimExcess();
-                            ManualResetEvent.Reset();
-                            ManualResetEvent.WaitOne();
-                        }
-                    }
-                    catch (Exception e)
-                    {
-                        logger.LogError("CefNetHeadless has failed to get the html", e);
-                        // wipe so do inf loops
-                        PageDict.Clear();
-                    }
-                }
-            });
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
                 thread.SetApartmentState(ApartmentState.STA);
             thread.Start();
@@ -145,6 +111,64 @@ namespace CarSearcher
             PageDict.Remove(id);
 
             return html;
+        }
+
+        /// <summary>
+        /// CefNet's main thread
+        /// i don't know why i don't want to know why
+        /// but this is only way i could get it to work
+        /// </summary>
+        /// <param name="app"></param>
+        /// <param name="cefPath"></param>
+        /// <param name="settings"></param>
+        /// <param name="isDone"></param>
+        private void CefNetMain(CefApplication app, string cefPath, CefSettings settings, ref bool isDone, ILogger<STACefNetHeadless> logger)
+        {
+            try
+            {
+                app.Initialize(Path.Combine(cefPath, "Release"), settings);
+                isDone = ManualResetEvent.Reset();
+                ManualResetEvent.WaitOne();
+
+                while (true)
+                {
+                    try
+                    {
+                        if (PageDict.FirstOrDefault().Value == null)
+                        {
+                            PageDict.TrimExcess();
+                            ManualResetEvent.Reset();
+                            ManualResetEvent.WaitOne();
+                        }
+
+                        Page page = PageDict.FirstOrDefault().Value;
+
+                        WindowlessWebView tab = new WindowlessWebView();
+                        SpinWait.SpinUntil(() => { CefApi.DoMessageLoopWork(); return !tab.IsBusy; });
+
+                        tab.Navigate(page.Url);
+
+                        SpinWait.SpinUntil(() => { CefApi.DoMessageLoopWork(); return !tab.BrowserObject.IsLoading; });
+
+                        Task<string> task = tab.GetMainFrame().GetSourceAsync(CancellationToken.None);
+                        SpinWait.SpinUntil(() => { CefApi.DoMessageLoopWork(); return task.IsCompleted; });
+
+                        page.Html = task.Result;
+                        tab.Close();
+                    }
+                    catch (Exception e)
+                    {
+                        logger.LogError(e, "CefNetHeadless has failed to get the html");
+                        // wipe so it doesn't inf loops
+                        PageDict.Clear();
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                logger.LogError(e, "CefNetHeadless has failed to Initialize");
+                isDone = true;
+            }
         }
 
         /// <summary>

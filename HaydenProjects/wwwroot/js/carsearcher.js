@@ -122,7 +122,7 @@ $("document").ready(function () {
 var makeText = "All Makes";
 var modelText = "All Models";
 
-// cache all the downloaded makemodels
+// cache all the downloaded make models
 const dict = { "All Makes": null };
 
 // event for the selection box car makes
