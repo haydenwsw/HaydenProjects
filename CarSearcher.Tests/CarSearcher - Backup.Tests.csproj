@@ -17,7 +17,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\CarSearcher\CarSearcher.csproj" />
-    <ProjectReference Include="..\HaydenProjects\HaydenProjects.csproj" />
   </ItemGroup>
   
 </Project>

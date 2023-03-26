@@ -99,7 +99,10 @@ namespace CarSearcher.Scrapers
                 long priceMin = filterOptions.MinPrice == "" ? 0 : long.Parse(filterOptions.MinPrice);
                 long priceMax = filterOptions.MaxPrice == "" ? 214748364700 : long.Parse(filterOptions.MaxPrice);
 
-                if (filterOptions.SearchTerm == null)
+                // the big tech overlord has banned the word "Corona" because of the times so we have use an alternative for the time being
+                string searchTerm = filterOptions.Make == "Toyota" && filterOptions.Model == "Corona" ? "coronas" : filterOptions.SearchTerm;
+
+                if (searchTerm == null)
                 {
                     MarketplaceRequest.fb_api_req_friendly_name = "CometMarketplaceCategoryContentPaginationQuery";
 
@@ -167,7 +170,7 @@ namespace CarSearcher.Scrapers
                         Bqf = new Bqf
                         {
                             Callsite = "COMMERCE_MKTPLACE_WWW",
-                            Query = filterOptions.SearchTerm
+                            Query = searchTerm
                         },
                         BrowseRequestParams = new BrowseRequestParams
                         {

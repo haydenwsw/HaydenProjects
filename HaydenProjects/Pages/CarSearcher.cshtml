@@ -41,7 +41,7 @@
             <div class="row-6 row-space">
                 <div class="col--1">
                     <div class="input-group-2">
-                        <input id="SearchTerm" class="input--style-1" type="text" name="Search" placeholder="Keywords" asp-for="Search" value=@Model.Search onkeydown="clearMakeModel()" style="border-radius: 5px 0 0 5px;">
+                        <input id="SearchTerm" class="input--style-1" type="text" name="Search" placeholder="Keywords" asp-for="Search" value=@Model.Search style="border-radius: 5px 0 0 5px;">
                         <button id="searchClearBtn" class="input--style-1 dropdown-btns" type="button" style="border-radius: 0px 5px 5px 0px;">✕</button>
                     </div>
                 </div>
@@ -51,7 +51,7 @@
         <div class="card-body">
             <div class="row-6 row-space">
                     <div class="input-group-1">
-                        <select id="selectSort" class="input--style-1" asp-for="Sort" onchange="sortList($('#selectSort').index()">
+                        <select id="selectSort" class="input--style-1" asp-for="Sort">
                             <option value=0>Price Low to High</option>
                             <option value=1>Price High to Low</option>
                             <option value=2>Unsorted</option>

@@ -51,7 +51,7 @@ namespace HaydenProjects
             {
                 new RateLimitRule
                 {
-                    Endpoint = "*:/",
+                    Endpoint = "*:/CarSearcher",
                     Limit = 3,
                     Period = "1s"
                 }

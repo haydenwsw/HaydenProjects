@@ -34,7 +34,6 @@ namespace CarSearcher.Models
         [MaxLength(25)]
         public string Model { get; private set; }
 
-
         [MaxLength(100)]
         public string SearchTerm { get; private set; }
 

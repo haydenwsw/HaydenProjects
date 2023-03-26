@@ -13,13 +13,15 @@ $("document").ready(function () {
     $("#selectMakeDropdown .droplist-item").click(function () {
         $("#selectMakeDropdown .droplist-item").show();
         $("#selectModel").val("All Models");
-        $("#selectModelDropdown .droplist-item").show();
+        modelText = "All Models";
     });
 
-    // make dropdown hover
+    // make dropdown item hover
     $("#selectMakeDropdown .droplist-item").hover(function () {
         $("#selectMake").val(this.innerText);
         makeText = this.innerText;
+        $("#selectModel").val("All Models");
+        modelText = "All Models";
     });
 
     // make v button
@@ -117,6 +119,10 @@ $("document").ready(function () {
     $("#maxPrice").focus(function () {
         $("#maxPrice").val("");
     });
+
+    $("#selectSort").on('change', function () {
+        sortList($("#selectSort")[0].selectedIndex);
+    });
 });
 
 var makeText = "All Makes";
@@ -187,19 +193,12 @@ function clearModelDropdown() {
 function addModelDropdown(array) {
 
     for (let i = 0; i < array.length; i++) {
-        let opt = allModels.cloneNode(true);
-        opt.innerHTML = array[i];
+        let opt = $("#allModels").clone();
+        opt.html(array[i]);
 
         // then append it to the select element
-        selectModelDropdown.appendChild(opt);
+        $("#selectModelDropdown").append(opt);
     }
-}
-
-// clears make model inputs
-function clearMakeModel() {
-
-    selectMake.selectedIndex = 0;
-    clearModelDropdown();
 }
 
 // 'v' button event for dropping the dropdown
@@ -232,12 +231,13 @@ function searchDropdown(text, $items) {
 // sorts the list
 function sortList(idx) {
 
-    var new_ul = itemList.cloneNode(false);
-    var lis = [];
+    let ul = $("#itemList");
+    let new_ul = itemList.cloneNode(false);
+    let lis = [];
 
-    for (let i = itemList.childNodes.length; i--;) {
-        if (itemList.childNodes[i].nodeName === "LI")
-            lis.push(itemList.childNodes[i]);
+    for (let i = ul.children().length; i--;) {
+        if (ul.children()[i].nodeName === "LI")
+            lis.push(ul.children()[i]);
     }
 
     switch (idx) {

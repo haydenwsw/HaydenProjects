@@ -38,15 +38,17 @@ namespace CarSearcher.Scrapers
 
             try
             {
-                // get the make model keys
-                string make = CarLookup.MakeModel[filterOptions.Make].Item1.GumtreeKey;
-                string model = CarLookup.MakeModel[filterOptions.Make].Item2[filterOptions.Model].GumtreeKey;
-
                 // get the search params for make model or text
                 string search;
                 if (filterOptions.SearchTerm == null)
+                {
+                    // get the make model keys
+                    string make = CarLookup.MakeModel[filterOptions.Make].Item1.GumtreeKey;
+                    string model = CarLookup.MakeModel[filterOptions.Make].Item2[filterOptions.Model].GumtreeKey;
+
                     search = (make != null ? $"attributeMap[cars.carmake_s]={make}&" : "") +
                     (model != null ? $"attributeMap[cars.carmodel_s]={model}&" : "");
+                }
                 else
                     search = $"keywords={filterOptions.SearchTerm}&";
 
