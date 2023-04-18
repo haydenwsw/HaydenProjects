@@ -40,10 +40,10 @@ li p {
     overflow: auto;
 }
 
-    .carItem:hover {
-        background: lightgrey;
-        cursor: pointer;
-    }
+.carItem:hover {
+    background: lightgrey;
+    cursor: pointer;
+}
 
 .list-group-item {
     background-color: rgb(75, 75, 75);

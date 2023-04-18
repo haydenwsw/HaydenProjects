@@ -22,14 +22,14 @@ namespace CarSearcher
 
         private readonly CarSearcherConfig CarSearcherConfig;
 
-        public CarLookup(IOptions<CarSearcherConfig> carsearcherconfig, IHttpClientFactory httpclientfactory)
+        public CarLookup(IOptions<CarSearcherConfig> carsearcherconfig)
         {
             CarSearcherConfig = carsearcherconfig.Value;
 
             if (!File.Exists(CarSearcherConfig.GetMakeModelPath))
                 // very long function call make sure i don't run it accidentally
                 if (CarSearcherConfig.GenerateMakeModelFile)
-                    GenerateMakeModel(httpclientfactory.CreateClient());
+                    GenerateMakeModel();
                 else
                     throw new FileNotFoundException("MakeModel.json is missing and GenerateMakeModelFile is set to false");
 
@@ -44,8 +44,9 @@ namespace CarSearcher
         /// <param name="fbmarketplace"></param>
         /// <param name="gumtree"></param>
         /// <returns></returns>
-        private void GenerateMakeModel(HttpClient httpClient)
+        private void GenerateMakeModel()
         {
+            HttpClient httpClient = new HttpClient();
             string json;
 
             var carsalesMakeModel = new Dictionary<string, (string, List<(string, string)>)>();

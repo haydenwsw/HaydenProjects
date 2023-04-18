@@ -1,0 +1,162 @@
+﻿@page
+@model HaydenProjects.Pages.CarGuesserModel
+@{
+    ViewData["Title"] = Model.Title;
+}
+
+<link rel="icon" type="image/png" href="~/icons/CarGuesser.ico" sizes="32x32">
+<link rel="stylesheet" href="~/css/carguesser.css">
+<script type="text/javascript" src="~/js/carguesser.js"></script>
+
+<div class="plate">
+
+    <div id="minimize" class="minimize">-</div>
+
+    <div id="formBox">
+
+        <div class="row-space">
+            <div class="body">
+                <p class="bold">Body Type:</p>
+                <input type="radio" name="option" id="All" value="All" checked>
+                <label for="All">All</label><br>
+
+                <input type="radio" name="option" id="Convertible" value="Convertible">
+                <label for="Convertible">Convertible</label><br>
+
+                <input type="radio" name="option" id="Coupe" value="Coupe">
+                <label for="Coupe">Coupe</label><br>
+
+                <input type="radio" name="option" id="Hatchback" value="Hatchback">
+                <label for="Hatchback">Hatchback</label><br>
+
+                <input type="radio" name="option" id="Sedan" value="Sedan">
+                <label for="Sedan">Sedan</label><br>
+
+                <input type="radio" name="option" id="Wagon" value="Wagon">
+                <label for="Wagon">Wagon</label><br>
+
+                <input type="radio" name="option" id="SUV" value="SUV">
+                <label for="SUV">SUV</label>
+            </div>
+            <div class="company">
+                <p class="bold">Company:</p>
+                <input type="radio" name="option" id="Audi" value="Audi">
+                <label for="Audi">Audi</label><br>
+
+                <input type="radio" name="option" id="BMW" value="BMW">
+                <label for="BMW">BMW</label><br>
+
+                <input type="radio" name="option" id="Ferrari" value="Ferrari">
+                <label for="Ferrari">Ferrari</label><br>
+
+                <input type="radio" name="option" id="Ford" value="Ford">
+                <label for="Ford">Ford</label><br>
+
+                <input type="radio" name="option" id="Holden" value="Holden">
+                <label for="Holden">Holden</label><br>
+
+                <input type="radio" name="option" id="Honda" value="Honda">
+                <label for="Honda">Honda</label><br>
+
+                <input type="radio" name="option" id="Hyundai" value="Hyundai">
+                <label for="Hyundai">Hyundai</label><br>
+
+                <input type="radio" name="option" id="Jaguar" value="Jaguar">
+                <label for="Jaguar">Jaguar</label><br>
+
+                <input type="radio" name="option" id="Kia" value="Kia">
+                <label for="Kia">Kia</label><br>
+
+                <input type="radio" name="option" id="Lamborghini" value="Lamborghini">
+                <label for="Lamborghini">Lamborghini</label>
+            </div>
+            <div class="company">
+                <p class="bold">Company:</p>
+                <input type="radio" name="option" id="Lexus" value="Lexus">
+                <label for="Lexus">Lexus</label><br>
+
+                <input type="radio" name="option" id="Mazda" value="Mazda">
+                <label for="Mazda">Mazda</label><br>
+
+                <input type="radio" name="option" id="McLaren" value="McLaren">
+                <label for="McLaren">McLaren</label><br>
+
+                <input type="radio" name="option" id="Mercedes-Benz" value="Mercedes-Benz">
+                <label for="Mercedes-Benz">Mercedes-Benz</label><br>
+
+                <input type="radio" name="option" id="Mitsubishi" value="Mitsubishi">
+                <label for="Mitsubishi">Mitsubishi</label><br>
+
+                <input type="radio" name="option" id="Nissan" value="Nissan">
+                <label for="Nissan">Nissan</label><br>
+
+                <input type="radio" name="option" id="Porsche" value="Porsche">
+                <label for="Porsche">Porsche</label><br>
+
+                <input type="radio" name="option" id="Subaru" value="Subaru">
+                <label for="Subaru">Subaru</label><br>
+
+                <input type="radio" name="option" id="Toyota" value="Toyota">
+                <label for="Toyota">Toyota</label><br>
+
+                <input type="radio" name="option" id="Volkswagen" value="Volkswagen">
+                <label for="Volkswagen">Volkswagen</label>
+            </div>
+        </div>
+
+        <div class="row row-space">
+
+            <div class="row-2">
+                <div class="input-group-1">
+                    <button id="submitEasy" class="btn-submit" type="button">Guess All Easy Mode</button>
+                </div>
+            </div>
+            <div class="row-2">
+                <div class="input-group-1">
+                    <button id="submitHard" class="btn-submit" type="button">Guess All Hard Mode</button>
+                </div>
+            </div>
+
+
+        </div>
+
+    </div>
+</div>
+
+<div id="scoreBoard" class="guesser" style="display: none;">
+    <div class="row row-space">
+        <div class="row-2">
+            <h2 id="title"></h2>
+        </div>
+        <div class="row-2">
+            <h2><b id="scoreText">Score: </b><b id="scoreNum">0</b></h2>
+        </div>
+    </div>
+</div>
+
+<div id="guesser" class="guesser" style="display: none;">
+
+    <div class="imgWrapper">
+        <img id="carImg" class="carImg" src="" alt="car photo">
+    </div>
+
+    <div class="row row-space">
+        <div class="row-2">
+            <button id="0" class="btn-choice" type="button"></button>
+        </div>
+        <div class="row-2">
+            <button id="1" class="btn-choice" type="button"></button>
+        </div>
+    </div>
+    <div class="row row-space">
+        <div class="row-2">
+            <button id="2" class="btn-choice" type="button"></button>
+        </div>
+        <div class="row-2">
+            <button id="3" class="btn-choice" type="button"></button>
+        </div>
+    </div>
+
+    <button id="skip" class="btn-choice" type="button" style="width: 40%">Skip</button>
+
+</div>

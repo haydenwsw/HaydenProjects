@@ -113,7 +113,7 @@ namespace HaydenProjects.Pages
                     Logger.LogInformation("CarSearcher: {ipaddress} {url}", Request.HttpContext.Connection.RemoteIpAddress, Request.QueryString);
 
                     // verify the inputs
-                    if (!(Search == null && CarLookup.MakeModel.ContainsKey(Make) && CarLookup.MakeModel[Make].Item2.ContainsKey(Model)))
+                    if (Search == null && !(CarLookup.MakeModel.ContainsKey(Make) && CarLookup.MakeModel[Make].Item2.ContainsKey(Model)))
                         return;
     
                     FilterOptions filterOptions = new FilterOptions(Make, Model, Search, Sort, Trans, Min, Max,

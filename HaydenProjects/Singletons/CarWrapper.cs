@@ -26,9 +26,10 @@ namespace HaydenProjects.Singletons
         private readonly FbMarketplace FbMarketplace;
         private readonly Gumtree Gumtree;
 
+        private readonly Random Rng;
         private readonly ILogger<CarWrapper> Logger;
 
-        public CarWrapper(IHttpClientFactory httpclientfactory, STACefNetHeadless cefnetheadless, IOptions<CarSearcherConfig> carsearcherconfig, CarLookup carlookup, ILogger<CarWrapper> logger)
+        public CarWrapper(IHttpClientFactory httpclientfactory, STACefNetHeadless cefnetheadless, IOptions<CarSearcherConfig> carsearcherconfig, CarLookup carlookup, Random random, ILogger<CarWrapper> logger)
         {
             CarSearcherConfig = carsearcherconfig.Value;
 
@@ -36,6 +37,7 @@ namespace HaydenProjects.Singletons
             FbMarketplace = new FbMarketplace(httpclientfactory.CreateClient(), carlookup, CarSearcherConfig);
             Gumtree = new Gumtree(httpclientfactory.CreateClient(), carlookup, CarSearcherConfig);
 
+            Rng = random;
             Logger = logger;
         }
 
@@ -112,6 +114,28 @@ namespace HaydenProjects.Singletons
             Sort(cars, filterOptions.SortBy);
 
             return cars;
+        }
+
+        /// <summary>
+        /// Get's a random car from Gumtree for the user to guess
+        /// Carsales blocks you for bot activity (going to random pages)
+        /// FbMarketplace is a pain to work with
+        /// </summary>
+        /// <param name="body"></param>
+        /// <param name="company"></param>
+        /// <returns></returns>
+        public async Task<GuessCar> GuessCarAsync(string body, string company, bool isEasyMode)
+        {
+            try
+            {
+                // get a random car from gumtree
+                return await Gumtree.GetRandomCar(body, company, isEasyMode, Rng);
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "query body: {body}, company: {company} isEasyMode: {isEasyMode}", body, company, isEasyMode);
+                return null;
+            }
         }
 
         // sorts the list

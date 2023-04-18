@@ -32,16 +32,16 @@ namespace CarSearcher.Scrapers
         {
             HttpClient = null;
             CefNetHeadless = cefnetheadless;
-            CarSearcherConfig = carsearcherconfig;
             CarLookup = carLookup;
+            CarSearcherConfig = carsearcherconfig;
         }
 
         public Carsales(HttpClient httpclient, CarLookup carLookup, CarSearcherConfig carsearcherconfig)
         {
             HttpClient = httpclient;
             CefNetHeadless = null;
-            CarSearcherConfig = carsearcherconfig;
             CarLookup = carLookup;
+            CarSearcherConfig = carsearcherconfig;
         }
 
         /// <summary>
@@ -166,22 +166,8 @@ namespace CarSearcher.Scrapers
         /// <returns></returns>
         public async Task GetMakeModel(Dictionary<string, (string, List<(string, string)>)> allMakeModel)
         {
-            string url = "https://www.carsales.com.au/_homepage/v1/search/?tenantName=carsales";
-
             // first get all the makes
-            HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Post, url);
-
-            request.Headers.Add("User-Agent", CarSearcherConfig.UserAgent);
-            request.Headers.Add("Accept", "*/*");
-
-            request.Content = new StringContent("{\"expression\":\"\"}");
-            request.Content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
-
-            HttpResponseMessage response = await HttpClient.SendAsync(request);
-            response.EnsureSuccessStatusCode();
-            string json = await response.Content.ReadAsStringAsync();
-
-            CarsalesMakeModel carsalesmakemodel = JsonConvert.DeserializeObject<CarsalesMakeModel>(json);
+            CarsalesMakeModel carsalesmakemodel = await HomepageApi("");
 
             if (carsalesmakemodel.PrimaryFields == null && carsalesmakemodel.PrimaryFields.Length == 0)
                 throw new CarsalesException($"The makes PrimaryFields is null or empty");
@@ -200,22 +186,10 @@ namespace CarSearcher.Scrapers
             // then loop through all the makes to get all the models
             foreach (KeyValuePair<string, (string, List<(string, string)>)> item in allMakeModel)
             {
-                request = new HttpRequestMessage(HttpMethod.Post, url);
-
-                request.Headers.Add("User-Agent", CarSearcherConfig.UserAgent);
-                request.Headers.Add("Accept", "*/*");
-
-                request.Content = new StringContent($"{{\"expression\":\"Make.{item.Key}.\"}}");
-                request.Content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
-
                 // wait a bit so we don't spam the server
                 await Task.Delay(500);
 
-                response = await HttpClient.SendAsync(request);
-                response.EnsureSuccessStatusCode();
-                json = await response.Content.ReadAsStringAsync();
-
-                carsalesmakemodel = JsonConvert.DeserializeObject<CarsalesMakeModel>(json);
+                carsalesmakemodel = await HomepageApi($"Make.{item.Key}.");
 
                 if (carsalesmakemodel.PrimaryFields == null && carsalesmakemodel.PrimaryFields.Length == 0)
                     throw new CarsalesException($"The returned PrimaryFields is null or empty on {item.Value.Item1}");
@@ -231,6 +205,32 @@ namespace CarSearcher.Scrapers
                     allMakeModel[item.Key].Item2.Add((values[i].ValueValue.Split('_')[1][1..^2], values[i].DisplayValue));
                 }
             }
+        }
+
+        /// <summary>
+        /// gets all the information from the homepage api
+        /// </summary>
+        /// <param name="expression"></param>
+        /// <returns></returns>
+        private async Task<CarsalesMakeModel> HomepageApi(string expression)
+        {
+            string url = "https://www.carsales.com.au/_homepage/v1/search/?tenantName=carsales";
+
+            HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Post, url);
+
+            request.Headers.Add("User-Agent", CarSearcherConfig.UserAgent);
+            request.Headers.Add("Accept", "*/*");
+
+            request.Content = new StringContent($"{{\"expression\":\"{expression}\"}}");
+            request.Content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
+
+            HttpResponseMessage response = await HttpClient.SendAsync(request);
+            response.EnsureSuccessStatusCode();
+            string json = await response.Content.ReadAsStringAsync();
+
+            CarsalesMakeModel carsalesmakemodel = JsonConvert.DeserializeObject<CarsalesMakeModel>(json);
+
+            return carsalesmakemodel;
         }
     }
 }

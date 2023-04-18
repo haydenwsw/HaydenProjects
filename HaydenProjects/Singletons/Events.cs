@@ -31,7 +31,7 @@ namespace HaydenProjects.Singletons
                 case "14-03":
                     return "𝛑 Day";
 
-                case "17-04":
+                case "31-03": // requires calculation (that's next years problem)
                     return "Happy Easter";
 
                 case "20-04":

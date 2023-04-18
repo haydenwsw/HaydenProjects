@@ -41,17 +41,26 @@ namespace HaydenProjects
             services.AddSingleton<CarWrapper>();
             services.AddSingleton<STACefNetHeadless>();
 
+            // add rng for car guesser
+            services.AddSingleton<Random>();
+
             // add the event class
             services.AddSingleton<Events>();
 
             services.AddMemoryCache();
 
-            // add a rate limit so users can't send to many requests
+            // add a rate limit to all the scrapers
             var rateLimitRules = new List<RateLimitRule>
             {
                 new RateLimitRule
                 {
                     Endpoint = "*:/CarSearcher",
+                    Limit = 3,
+                    Period = "1s"
+                },
+                new RateLimitRule
+                {
+                    Endpoint = "*:/api/CarGuesserApi",
                     Limit = 3,
                     Period = "1s"
                 }

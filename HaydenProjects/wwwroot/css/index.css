@@ -21,22 +21,30 @@
     -moz-box-pack: justify;
     -ms-flex-pack: justify;
     justify-content: space-between;
+    max-width: 600px;
+    margin: auto;
 }
 
 .item-group {
     position: relative;
     margin-bottom: 40px;
+    text-align: center;
 }
 
-.row-moblie {
+.row-1 {
     width: 100%;
     text-align: center;
 }
 
+.row-2 {
+    width: -webkit-calc((100% - 20px) / 2);
+    width: -moz-calc((100% - 20px) / 2);
+    width: calc((100% - 20px) / 2);
+}
+
 @media (max-width: 767px) {
-    .row-moblie {
+    .row-2 {
         width: 100%;
-        text-align: center;
     }
 }
 

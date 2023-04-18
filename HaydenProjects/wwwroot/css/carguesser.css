@@ -1,0 +1,116 @@
+﻿
+.plate {
+    -webkit-border-radius: 10px;
+    -moz-border-radius: 10px;
+    border-radius: 10px;
+    background: #484848;
+    position: relative;
+}
+
+.row-space {
+    -webkit-box-pack: justify;
+    -webkit-justify-content: space-between;
+    -moz-box-pack: justify;
+    -ms-flex-pack: justify;
+    justify-content: space-between;
+    display: flex;
+    margin: 0px 20px;
+}
+
+.row-2 {
+    width: -webkit-calc((100% - 20px) / 2);
+    width: -moz-calc((100% - 20px) / 2);
+    width: calc((100% - 20px) / 2);
+}
+
+@media (max-width: 767px) {
+    .row-2 {
+        width: 100%;
+    }
+}
+
+@media (max-width: 767px) {
+    .carImg {
+        width: 100%;
+        height: 100%;
+    }
+}
+
+.imgWrapper {
+    display: inline-block;
+    overflow: hidden;
+}
+
+.minimize {
+    border: solid 1px;
+    border-radius: 10px;
+    width: 25px;
+    float: right;
+    cursor: pointer;
+    text-align: center;
+    font-weight: bold;
+}
+
+.bold {
+    font-weight: bold;
+}
+
+.input-group-1 {
+    position: relative;
+    margin: auto;
+    width: 75%;
+}
+
+.btn-submit {
+    width: 100%;
+    line-height: 60px;
+    font-family: inherit;
+    background: #007f00;
+    -webkit-border-radius: 10px;
+    -moz-border-radius: 10px;
+    border-radius: 10px;
+    text-transform: uppercase;
+    color: #fff;
+    font-size: 18px;
+    font-weight: 700;
+    -webkit-transition: all 0.4s ease;
+    -o-transition: all 0.4s ease;
+    -moz-transition: all 0.4s ease;
+    transition: all 0.4s ease;
+    outline: none;
+    border: none;
+    margin: 10px 0px;
+}
+
+.btn-submit:hover {
+    background: #006400;
+}
+
+.guesser {
+    text-align: center;
+    margin: 10px;
+}
+
+.btn-choice {
+    width: 90%;
+    line-height: 60px;
+    font-family: inherit;
+    background: #484848;
+    -webkit-border-radius: 10px;
+    -moz-border-radius: 10px;
+    border-radius: 10px;
+    color: #fff;
+    font-size: 18px;
+    font-weight: 700;
+    -webkit-transition: all 0.4s ease;
+    -o-transition: all 0.4s ease;
+    -moz-transition: all 0.4s ease;
+    transition: all 0.4s ease;
+    outline: none;
+    border: none;
+    margin: 10px 0px;
+}
+
+.btn-choice:hover {
+    background: #606060;
+}
