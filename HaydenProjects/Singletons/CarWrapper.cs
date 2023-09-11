@@ -29,16 +29,16 @@ namespace HaydenProjects.Singletons
         private readonly Random Rng;
         private readonly ILogger<CarWrapper> Logger;
 
-        public CarWrapper(IHttpClientFactory httpclientfactory, STACefNetHeadless cefnetheadless, IOptions<CarSearcherConfig> carsearcherconfig, CarLookup carlookup, Random random, ILogger<CarWrapper> logger)
+        public CarWrapper(IHttpClientFactory httpclientfactory, STACefNetHeadless cefnetheadless, IOptions<CarSearcherConfig> carsearcherconfig, CarLookup carlookup, Random random, ILoggerFactory loggerFactory)
         {
             CarSearcherConfig = carsearcherconfig.Value;
 
-            Carsales = new Carsales(cefnetheadless, carlookup, CarSearcherConfig);
-            FbMarketplace = new FbMarketplace(httpclientfactory.CreateClient(), carlookup, CarSearcherConfig);
-            Gumtree = new Gumtree(httpclientfactory.CreateClient(), carlookup, CarSearcherConfig);
+            Carsales = new Carsales(cefnetheadless, carlookup, CarSearcherConfig, loggerFactory.CreateLogger<Carsales>());
+            FbMarketplace = new FbMarketplace(httpclientfactory.CreateClient(), carlookup, CarSearcherConfig, loggerFactory.CreateLogger<FbMarketplace>());
+            Gumtree = new Gumtree(httpclientfactory.CreateClient(), carlookup, CarSearcherConfig, loggerFactory.CreateLogger<Gumtree>());
 
             Rng = random;
-            Logger = logger;
+            Logger = loggerFactory.CreateLogger<CarWrapper>();
         }
 
         /// <summary>
@@ -69,43 +69,7 @@ namespace HaydenProjects.Singletons
             else
                 gumtreeCars = Task.FromResult<List<Car>>(null);
 
-            List<Car>[] returnCars;
-            try
-            {
-                // await all the tasks in parallel at once
-                returnCars = await Task.WhenAll(carsalesCars, fbMarketplaceCars, gumtreeCars);
-            }
-            catch
-            {
-                returnCars = new List<Car>[3];
-                List<Exception> exceptions = new List<Exception>();
-
-                if (carsalesCars.Status == TaskStatus.RanToCompletion)
-                    returnCars[0] = carsalesCars.Result;
-                else
-                    exceptions.Add(carsalesCars.Exception.InnerException);
-
-                if (fbMarketplaceCars.Status == TaskStatus.RanToCompletion)
-                    returnCars[1] = fbMarketplaceCars.Result;
-                else
-                    exceptions.Add(fbMarketplaceCars.Exception.InnerException);
-
-                if (gumtreeCars.Status == TaskStatus.RanToCompletion)
-                    returnCars[2] = gumtreeCars.Result;
-                else
-                    exceptions.Add(gumtreeCars.Exception.InnerException);
-
-                Logger.LogError(new AggregateException(exceptions), "FilterOption: {filterOptions}", filterOptions);
-            }
-
-            if (returnCars[0] != null && returnCars[0].Count == 0)
-                Logger.LogInformation("Carsales ScrapeCars has no listings. FilterOptions: {FilterOptions}", filterOptions);
-
-            if (returnCars[1] != null && returnCars[1].Count == 0)
-                Logger.LogInformation("FbMarketplace ScrapeCars has no listings. FilterOptions: {FilterOptions}", filterOptions);
-
-            if (returnCars[2] != null && returnCars[2].Count == 0)
-                Logger.LogInformation("Gumtree ScrapeCars has no listings. FilterOptions: {FilterOptions}", filterOptions);
+            List<Car>[] returnCars = await Task.WhenAll(carsalesCars, fbMarketplaceCars, gumtreeCars);
 
             // combine all the lists
             List<Car> cars = returnCars.SelectMany(x => x ?? new List<Car>()).ToList();

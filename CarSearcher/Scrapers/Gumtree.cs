@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 
 namespace CarSearcher.Scrapers
 {
@@ -25,15 +26,17 @@ namespace CarSearcher.Scrapers
         private readonly HttpClient HttpClient;
         private readonly CarLookup CarLookup;
         private readonly CarSearcherConfig CarSearcherConfig;
+        private readonly ILogger<Gumtree> Logger;
 
         // get all the makes for car guesser
         private readonly string[] RngMakes;
 
-        public Gumtree(HttpClient httpclient, CarLookup carlookup, CarSearcherConfig carsearcherconfig)
+        public Gumtree(HttpClient httpclient, CarLookup carlookup, CarSearcherConfig carsearcherconfig, ILogger<Gumtree> logger)
         {
             HttpClient = httpclient;
             CarSearcherConfig = carsearcherconfig;
             CarLookup = carlookup;
+            Logger = logger;
 
             RngMakes = CarLookup.MakeModel.Where(x => x.Value.Item2.Values.Count > 2).Select(x => x.Key).ToArray();
         }
@@ -91,9 +94,12 @@ namespace CarSearcher.Scrapers
 
                 ResultList[] resultList = fbMarketplaceResponse.Data.Results.ResultList;
 
-                //if search comes up empty return
+                // if search comes up empty return
                 if (resultList.Length == 0)
+                {
+                    Logger.LogInformation("Carsales ScrapeCars has no listings. url: {url}", url);
                     return new List<Car>();
+                }
 
                 List<Car> carItems = new List<Car>();
                 for (int i = 0; i < resultList.Length; i++)
@@ -118,7 +124,8 @@ namespace CarSearcher.Scrapers
             }
             catch (Exception ex)
             {
-                return await Task.FromException<List<Car>>(new GumtreeException($"Gumtree GetCars has failed. Url: {url}", ex));
+                Logger.LogError("Gumtree GetCars has failed. Url: {url}, {ex}", url, ex);
+                return new List<Car>();
             }
         }
 
@@ -318,7 +325,8 @@ namespace CarSearcher.Scrapers
             }
             catch (Exception ex)
             {
-                return await Task.FromException<GuessCar>(new CarsalesException($"Gumtree GuessCar has failed. Url: {url}", ex));
+                Logger.LogError("Gumtree GetCars has failed. Url: {url}, {ex}", url, ex);
+                return null;
             }
         }
 

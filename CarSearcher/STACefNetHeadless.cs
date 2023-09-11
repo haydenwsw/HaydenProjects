@@ -115,8 +115,7 @@ namespace CarSearcher
 
         /// <summary>
         /// CefNet's main thread
-        /// i don't know why i don't want to know why
-        /// but this is only way i could get it to work
+        /// Cef needs an constant sta thread to attach itself to but asp.net has no constant sta thread so we need to make our own
         /// </summary>
         /// <param name="app"></param>
         /// <param name="cefPath"></param>

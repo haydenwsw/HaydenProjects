@@ -1,4 +1,5 @@
-﻿using System.Web;
+﻿using System;
+using System.Web;
 
 namespace CarSearcher.Scrapers
 {
@@ -16,6 +17,7 @@ namespace CarSearcher.Scrapers
             public string variables;
             public string server_timestamps;
             public string doc_id;
+            public DateTime CreatedDate;
 
             public override string ToString()
             {

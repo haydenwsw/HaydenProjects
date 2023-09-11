@@ -1,4 +1,4 @@
-Find a matching version of the CEF
+Find a matching version of the CEF (105.3)
 Download the "Minimal Distribution" distribution from:
 https://cef-builds.spotifycdn.com/index.html
 and extract files to this directory and
@@ -15,4 +15,12 @@ whereis libdl.so.2
 sudo ln -sf <your_libdl.so.2_path> /usr/lib/libdl.so
 
 "System.DllNotFoundException: Unable to load shared library 'X11'"
-sudo apt-get install libx11-dev
+sudo apt install libx11-dev
+
+"dotnet: error while loading shared libraries: <package>: cannot open shared object file: No such file or directory"
+sudo apt install libatk-bridge2.0-0 libdrm2 libxcomposite-dev libxdamage1 libxrandr2 libgbm-dev libxkbcommon-x11-0 libwayland-client0
+
+"Missing X server or $DISPLAY"
+sudo apt install xvfb
+sudo Xvfb :99 -ac -screen 0 1024x768x24 & export DISPLAY=:99
+to enable on startup add as service /etc/systemd/system/xvfb.service

@@ -27,7 +27,6 @@ namespace HaydenProjects.Pages
 
         public void OnGet()
         {
-            Events.TimesVisited++;
         }
     }
 }

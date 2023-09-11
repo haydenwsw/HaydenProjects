@@ -55,13 +55,13 @@ namespace CarSearcher.Models
 
         public int PageNumber { get; private set; }
 
-        public FilterOptions(string make, string model, string searchterm, int sorttype, int transtype, string pricemin, string pricemax, bool togglecarsales, bool togglefbmarketplace, bool togglegumtree, int pagenumber)
+        public FilterOptions(string make, string model, string searchterm, int sortby, int trans, string pricemin, string pricemax, bool togglecarsales, bool togglefbmarketplace, bool togglegumtree, int pagenumber)
         {
             Make = make;
             Model = model;
             SearchTerm = searchterm;
-            SortBy = Math.Clamp(sorttype, 0, 4);
-            Transmission = Math.Clamp(transtype, 0, 2);
+            SortBy = Math.Clamp(sortby, 0, 4);
+            Transmission = Math.Clamp(trans, 0, 2);
             MinPrice = pricemin.LeaveOnlyNumbers();
             MaxPrice = pricemax.LeaveOnlyNumbers();
             ToggleCarsales = togglecarsales;

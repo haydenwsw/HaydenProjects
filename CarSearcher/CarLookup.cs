@@ -73,7 +73,7 @@ namespace CarSearcher
             }
             else
             {
-                FbMarketplace fbmarketplace = new FbMarketplace(httpClient, this, CarSearcherConfig);
+                FbMarketplace fbmarketplace = new FbMarketplace(httpClient, this, CarSearcherConfig, null);
                 fbmarketplace.GetMakeModel(fbmarketplaceMakeModel).Wait();
                 json = JsonConvert.SerializeObject(fbmarketplaceMakeModel, Formatting.Indented);
                 File.WriteAllText($"{CarSearcherConfig.FolderPath}/fbmarketplace.json", json);
@@ -87,7 +87,7 @@ namespace CarSearcher
             }
             else
             {
-                Gumtree gumtree = new Gumtree(httpClient, this, CarSearcherConfig);
+                Gumtree gumtree = new Gumtree(httpClient, this, CarSearcherConfig, null);
                 gumtree.GetMakeModel(gumtreeMakeModel).Wait();
                 json = JsonConvert.SerializeObject(gumtreeMakeModel, Formatting.Indented);
                 File.WriteAllText($"{CarSearcherConfig.FolderPath}/gumtree.json", json);

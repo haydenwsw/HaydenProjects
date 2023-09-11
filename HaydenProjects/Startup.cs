@@ -54,16 +54,10 @@ namespace HaydenProjects
             {
                 new RateLimitRule
                 {
-                    Endpoint = "*:/CarSearcher",
+                    Endpoint = "*",
                     Limit = 3,
                     Period = "1s"
                 },
-                new RateLimitRule
-                {
-                    Endpoint = "*:/api/CarGuesserApi",
-                    Limit = 3,
-                    Period = "1s"
-                }
             };
             services.Configure<IpRateLimitOptions>(opt =>
             {

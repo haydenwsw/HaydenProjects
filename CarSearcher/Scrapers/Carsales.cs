@@ -11,6 +11,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 
 namespace CarSearcher.Scrapers
 {
@@ -27,13 +28,15 @@ namespace CarSearcher.Scrapers
         private readonly STACefNetHeadless CefNetHeadless;
         private readonly CarLookup CarLookup;
         private readonly CarSearcherConfig CarSearcherConfig;
+        private readonly ILogger<Carsales> Logger;
 
-        public Carsales(STACefNetHeadless cefnetheadless, CarLookup carLookup, CarSearcherConfig carsearcherconfig)
+        public Carsales(STACefNetHeadless cefnetheadless, CarLookup carLookup, CarSearcherConfig carsearcherconfig, ILogger<Carsales> logger)
         {
             HttpClient = null;
             CefNetHeadless = cefnetheadless;
             CarLookup = carLookup;
             CarSearcherConfig = carsearcherconfig;
+            Logger = logger;
         }
 
         public Carsales(HttpClient httpclient, CarLookup carLookup, CarSearcherConfig carsearcherconfig)
@@ -106,7 +109,10 @@ namespace CarSearcher.Scrapers
 
                 // if failed to get the listing return a emtpy list
                 if (items.Length == 0)
+                {
+                    Logger.LogInformation("Carsales ScrapeCars has no listings. url: {url}", url);
                     return new List<Car>();
+                }
 
                 var carItems = new List<Car>();
                 for (int i = 0; i < items.Length; i++)
@@ -155,7 +161,8 @@ namespace CarSearcher.Scrapers
             }
             catch (Exception ex)
             {
-                return await Task.FromException<List<Car>>(new CarsalesException($"Carsales GetCars has failed. Url: {url}", ex));
+                Logger.LogError("Carsales GetCars has failed. Url: {url}, {ex}", url, ex);
+                return new List<Car>();
             }
         }
 

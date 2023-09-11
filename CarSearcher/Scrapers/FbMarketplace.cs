@@ -12,6 +12,7 @@ using System.Net.Http.Headers;
 using Newtonsoft.Json;
 using System.Collections.Specialized;
 using System.Web;
+using Microsoft.Extensions.Logging;
 
 namespace CarSearcher.Scrapers
 {
@@ -36,17 +37,18 @@ namespace CarSearcher.Scrapers
         private readonly FbMarketplaceCookie MarketplaceCookie;
         private readonly string X_ASBD_ID;
         private FbMarketplaceRequest MarketplaceRequest;
-        private DateTime Date = DateTime.Now.Date;
 
         private readonly HttpClient HttpClient;
         private readonly CarLookup CarLookup;
         private readonly CarSearcherConfig CarSearcherConfig;
+        private readonly ILogger<FbMarketplace> Logger;
 
-        public FbMarketplace(HttpClient httpclient, CarLookup carlookup, CarSearcherConfig carsearcherconfig)
+        public FbMarketplace(HttpClient httpclient, CarLookup carlookup, CarSearcherConfig carsearcherconfig, ILogger<FbMarketplace> logger)
         {
             HttpClient = httpclient;
             CarSearcherConfig = carsearcherconfig;
             CarLookup = carlookup;
+            Logger = logger;
 
             // load the facebook cookie
             if (File.Exists(CarSearcherConfig.GetFacebookCookiePath))
@@ -70,6 +72,14 @@ namespace CarSearcher.Scrapers
             {
                 string json = File.ReadAllText(CarSearcherConfig.GetMarketplaceKeysPath);
                 MarketplaceRequest = JsonConvert.DeserializeObject<FbMarketplaceRequest>(json);
+
+                // if the keys are a day old
+                if (MarketplaceRequest.CreatedDate != DateTime.Now.Date)
+                {
+                    MarketplaceRequest = GetFbMarketplaceKeys().Result;
+                    json = JsonConvert.SerializeObject(MarketplaceRequest, Formatting.Indented);
+                    File.WriteAllText(CarSearcherConfig.GetMarketplaceKeysPath, json);
+                }
             }
             else
             {
@@ -86,13 +96,11 @@ namespace CarSearcher.Scrapers
             try
             {
                 // if a day has passed or they're no keys regenerate them
-                if (Date != DateTime.Now.Date || !File.Exists(CarSearcherConfig.GetMarketplaceKeysPath))
+                if (MarketplaceRequest.CreatedDate != DateTime.Now.Date || !File.Exists(CarSearcherConfig.GetMarketplaceKeysPath))
                 {
                     MarketplaceRequest = await GetFbMarketplaceKeys();
                     string jsonKeys = JsonConvert.SerializeObject(MarketplaceRequest, Formatting.Indented);
                     File.WriteAllText(CarSearcherConfig.GetMarketplaceKeysPath, jsonKeys);
-
-                    Date = DateTime.Now.Date;
                 }
 
                 // do price min max
@@ -100,131 +108,19 @@ namespace CarSearcher.Scrapers
                 long priceMax = filterOptions.MaxPrice == "" ? 214748364700 : long.Parse(filterOptions.MaxPrice);
 
                 // the big tech overlord has banned the word "Corona" because of the times so we have use an alternative for the time being
-                string searchTerm = filterOptions.Make == "Toyota" && filterOptions.Model == "Corona" ? "coronas" : filterOptions.SearchTerm;
+                string searchTerm = filterOptions.SearchTerm;
+                if ((filterOptions.Make == "Toyota" && filterOptions.Model == "Corona") || filterOptions.SearchTerm == "corona")
+                    searchTerm = "coronas";
 
                 if (searchTerm == null)
                 {
-                    MarketplaceRequest.fb_api_req_friendly_name = "CometMarketplaceCategoryContentPaginationQuery";
-
-                    // get the make model keys
-                    string make = CarLookup.MakeModel[filterOptions.Make].Item1.FbMaketplaceKey;
-                    string model = CarLookup.MakeModel[filterOptions.Make].Item2[filterOptions.Model].FbMaketplaceKey;
-
-                    // do make model
-                    ContextualDatum[] contextualData = new ContextualDatum[0];
-                    ContextualDatum[] stringVerticalFields = new ContextualDatum[0];
-                    if (filterOptions.Make != "All Makes")
-                    {
-                        contextualData = filterOptions.Model == "All Models" ? new ContextualDatum[1] { new ContextualDatum { Name = "make", Value = $"\"{make}\"" } } : new ContextualDatum[2] { new ContextualDatum { Name = "make", Value = $"\"{make}\"" }, new ContextualDatum { Name = "model", Value = $"\"{model}\"" } };
-                        stringVerticalFields = filterOptions.Model == "All Models" ? new ContextualDatum[1] { new ContextualDatum { Name = "canonical_make_id", Value = make } } : new ContextualDatum[2] { new ContextualDatum { Name = "canonical_make_id", Value = make }, new ContextualDatum { Name = "canonical_model_id", Value = model } };
-                    }
-
-                    // do filter
-                    FilterSortingParams filterSortingParams = filterOptions.GetSort(SortBy);
-
-                    // do transmission
-                    NumericVerticalField[] numericVerticalFields = filterOptions.GetTrans(Transmission);
-
-                    // extra params
-                    int count = 24;
-                    TopicPageParams topicPageParams = new TopicPageParams { LocationId = "sydney", Url = "vehicles" };
-
-                    // do page number and set keys to the request
-                    string cursor = null;
-                    if (filterOptions.PageNumber > 1)
-                    {
-                        cursor = $"{{\"basic\":{{\"item_index\":{(filterOptions.PageNumber - 1) * 24}}}}}";
-                        MarketplaceRequest.doc_id = "4567898856668038";
-                        contextualData = null;
-                        count = 10; // maximum count per request
-                        topicPageParams = null;
-                    }
-                    else
-                    {
-                        MarketplaceRequest.doc_id = "5459254634179638";
-                    }
-
-                    // set the varables to get make model
-                    fbMarketplaceVariables = new FbMarketplaceVariables
-                    {
-                        BuyLocation = new BuyLocation { Latitude = -33.8675, Longitude = 151.208 },
-                        CategoryIdArray = new long[1] { 807311116002614 },
-                        ContextualData = contextualData,
-                        Count = count,
-                        Cursor = cursor,
-                        FilterSortingParams = filterSortingParams,
-                        MarketplaceBrowseContext = "CATEGORY_FEED",
-                        NumericVerticalFields = numericVerticalFields,
-                        NumericVerticalFieldsBetween = new object[0],
-                        PriceRange = new long[2] { priceMin, priceMax },
-                        Radius = 65000,
-                        Scale = 1,
-                        StringVerticalFields = stringVerticalFields,
-                        TopicPageParams = topicPageParams
-                    };
+                    fbMarketplaceVariables = GetMakeModelVars(filterOptions, priceMin, priceMax);
                 }
                 else
                 {
-                    Params paramss = new Params
-                    {
-                        Bqf = new Bqf
-                        {
-                            Callsite = "COMMERCE_MKTPLACE_WWW",
-                            Query = searchTerm
-                        },
-                        BrowseRequestParams = new BrowseRequestParams
-                        {
-                            CommerceEnableLocalPickup = true,
-                            CommerceEnableShipping = true,
-                            CommerceSearchAndRpAvailable = true,
-                            CommerceSearchAndRpCategoryId = new object[0],
-                            FilterLocationLatitude = -33.8675,
-                            FilterLocationLongitude = 151.208,
-                            FilterPriceLowerBound = priceMin,
-                            FilterPriceUpperBound = priceMax,
-                            FilterRadiusKm = 65,
-                            VerticalFieldDiscreteAutoTransmissionTypeMulti = filterOptions.GetTrans(Transmission2),
-                            CommerceSearchSortBy = filterOptions.GetSort(SortBy2)
-                        },
-                        CustomRequestParams = new CustomRequestParams
-                        {
-                            ContextualFilters = new object[0],
-                            SearchVertical = "C2C",
-                            Surface = "SEARCH",
-                            VirtualContextualFilters = new object[0]
-                        }
-                    };
-
-                    // set the varables to get search and set make model settings in the request
-                    if (filterOptions.PageNumber > 1)
-                    {
-                        // todo cache the id (br) sent back or get one when needed
+                    fbMarketplaceVariables = MakeSearchVars(filterOptions, searchTerm, priceMin, priceMax);
+                    if (fbMarketplaceVariables == null)
                         return new List<Car>();
-                    }
-                    else
-                    {
-                        MarketplaceRequest.fb_api_req_friendly_name = "CometMarketplaceSearchContentContainerQuery";
-                        MarketplaceRequest.doc_id = "5240929566007459";
-
-                        fbMarketplaceVariables = new FbMarketplaceVariables
-                        {
-                            BuyLocation = new BuyLocation { Latitude = -33.8675, Longitude = 151.208 },
-                            Count = 24,
-                            FlashSaleEventId = "",
-                            HasFlashSaleEventId = false,
-                            MarketplaceSearchMetadataCardEnabled = true,
-                            Params = paramss,
-                            SavedSearchQuery = filterOptions.SearchTerm,
-                            Scale = 1,
-                            ShouldIncludePopularSearches = false,
-                            TopicPageParams = new TopicPageParams
-                            {
-                                LocationId = "sydney",
-                                Url = null
-                            },
-                            VehicleParams = ""
-                        };
-                    }
                 }
 
                 MarketplaceRequest.variables = fbMarketplaceVariables.ToJson();
@@ -266,20 +162,26 @@ namespace CarSearcher.Scrapers
                 }
 
                 if (json == "")
-                    return await Task.FromException<List<Car>>(new FbMarketplaceException($"FbMarketplace GetCars has failed. The request parameters are invaild, out dated cookies? FilterOptions: {fbMarketplaceVariables.ToJson()}"));
+                {
+                    Logger.LogError("FbMarketplace GetCars has failed. The request parameters are invaild, out dated cookies?");
+                    return new List<Car>();
+                }
 
                 FbMarketplaceResponse fbMarketplaceResponse = JsonConvert.DeserializeObject<FbMarketplaceResponse>(json);
 
                 // get all the listings
                 Edge[] edges = null;
-                if (filterOptions.SearchTerm == null)
+                if (searchTerm == null)
                     edges = fbMarketplaceResponse.Data.Viewer.MarketplaceFeedStories.Edges;
                 else
                     edges = fbMarketplaceResponse.Data.MarketplaceSearch.FeedUnits.Edges;
 
-                //if search comes up empty return
+                // if search comes up empty return
                 if (edges.Length == 0)
+                {
+                    Logger.LogInformation("FbMarketplace ScrapeCars has no listings. FilterOptions: {FilterOptions}", filterOptions);
                     return new List<Car>();
+                }
 
                 // add them to the list
                 List<Car> carItems = new List<Car>();
@@ -305,7 +207,134 @@ namespace CarSearcher.Scrapers
             }
             catch (Exception ex)
             {
-                return await Task.FromException<List<Car>>(new FbMarketplaceException($"FbMarketplace GetCars has failed. FilterOptions: {fbMarketplaceVariables.ToJson()}", ex));
+                Logger.LogError("FbMarketplace GetCars has failed: {filter}, {ex}", filterOptions, ex);
+                return new List<Car>();
+            }
+        }
+
+        private FbMarketplaceVariables GetMakeModelVars(FilterOptions filterOptions, long priceMin, long priceMax)
+        {
+            MarketplaceRequest.fb_api_req_friendly_name = "CometMarketplaceCategoryContentPaginationQuery";
+
+            // get the make model keys
+            string make = CarLookup.MakeModel[filterOptions.Make].Item1.FbMaketplaceKey;
+            string model = CarLookup.MakeModel[filterOptions.Make].Item2[filterOptions.Model].FbMaketplaceKey;
+
+            // do make model
+            ContextualDatum[] contextualData = new ContextualDatum[0];
+            ContextualDatum[] stringVerticalFields = new ContextualDatum[0];
+            if (filterOptions.Make != "All Makes")
+            {
+                contextualData = filterOptions.Model == "All Models" ? new ContextualDatum[1] { new ContextualDatum { Name = "make", Value = $"\"{make}\"" } } : new ContextualDatum[2] { new ContextualDatum { Name = "make", Value = $"\"{make}\"" }, new ContextualDatum { Name = "model", Value = $"\"{model}\"" } };
+                stringVerticalFields = filterOptions.Model == "All Models" ? new ContextualDatum[1] { new ContextualDatum { Name = "canonical_make_id", Value = make } } : new ContextualDatum[2] { new ContextualDatum { Name = "canonical_make_id", Value = make }, new ContextualDatum { Name = "canonical_model_id", Value = model } };
+            }
+
+            // do filter
+            FilterSortingParams filterSortingParams = filterOptions.GetSort(SortBy);
+
+            // do transmission
+            NumericVerticalField[] numericVerticalFields = filterOptions.GetTrans(Transmission);
+
+            // extra params
+            int count = 24;
+            TopicPageParams topicPageParams = new TopicPageParams { LocationId = "sydney", Url = "vehicles" };
+
+            // do page number and set keys to the request
+            string cursor = null;
+            if (filterOptions.PageNumber > 1)
+            {
+                cursor = $"{{\"basic\":{{\"item_index\":{(filterOptions.PageNumber - 1) * 24}}}}}";
+                MarketplaceRequest.doc_id = "4567898856668038";
+                contextualData = null;
+                count = 10; // maximum count per request
+                topicPageParams = null;
+            }
+            else
+            {
+                MarketplaceRequest.doc_id = "5459254634179638";
+            }
+
+            // set the varables to get make model
+            return new FbMarketplaceVariables
+            {
+                BuyLocation = new BuyLocation { Latitude = -33.8675, Longitude = 151.208 },
+                CategoryIdArray = new long[1] { 807311116002614 },
+                ContextualData = contextualData,
+                Count = count,
+                Cursor = cursor,
+                FilterSortingParams = filterSortingParams,
+                MarketplaceBrowseContext = "CATEGORY_FEED",
+                NumericVerticalFields = numericVerticalFields,
+                NumericVerticalFieldsBetween = new object[0],
+                PriceRange = new long[2] { priceMin, priceMax },
+                Radius = 65000,
+                Scale = 1,
+                StringVerticalFields = stringVerticalFields,
+                TopicPageParams = topicPageParams
+            };
+        }
+
+        private FbMarketplaceVariables MakeSearchVars(FilterOptions filterOptions, string searchTerm, long priceMin, long priceMax)
+        {
+            Params paramss = new Params
+            {
+                Bqf = new Bqf
+                {
+                    Callsite = "COMMERCE_MKTPLACE_WWW",
+                    Query = searchTerm
+                },
+                BrowseRequestParams = new BrowseRequestParams
+                {
+                    CommerceEnableLocalPickup = true,
+                    CommerceEnableShipping = true,
+                    CommerceSearchAndRpAvailable = true,
+                    CommerceSearchAndRpCategoryId = new object[0],
+                    FilterLocationLatitude = -33.8675,
+                    FilterLocationLongitude = 151.208,
+                    FilterPriceLowerBound = priceMin,
+                    FilterPriceUpperBound = priceMax,
+                    FilterRadiusKm = 65,
+                    VerticalFieldDiscreteAutoTransmissionTypeMulti = filterOptions.GetTrans(Transmission2),
+                    CommerceSearchSortBy = filterOptions.GetSort(SortBy2)
+                },
+                CustomRequestParams = new CustomRequestParams
+                {
+                    ContextualFilters = new object[0],
+                    SearchVertical = "C2C",
+                    Surface = "SEARCH",
+                    VirtualContextualFilters = new object[0]
+                }
+            };
+
+            // set the varables to get search and set make model settings in the request
+            if (filterOptions.PageNumber > 1)
+            {
+                // todo cache the id (br) sent back or get one when needed
+                return null;
+            }
+            else
+            {
+                MarketplaceRequest.fb_api_req_friendly_name = "CometMarketplaceSearchContentContainerQuery";
+                MarketplaceRequest.doc_id = "5240929566007459";
+
+                return new FbMarketplaceVariables
+                {
+                    BuyLocation = new BuyLocation { Latitude = -33.8675, Longitude = 151.208 },
+                    Count = 24,
+                    FlashSaleEventId = "",
+                    HasFlashSaleEventId = false,
+                    MarketplaceSearchMetadataCardEnabled = true,
+                    Params = paramss,
+                    SavedSearchQuery = searchTerm,
+                    Scale = 1,
+                    ShouldIncludePopularSearches = false,
+                    TopicPageParams = new TopicPageParams
+                    {
+                        LocationId = "sydney",
+                        Url = null
+                    },
+                    VehicleParams = ""
+                };
             }
         }
 
@@ -480,9 +509,11 @@ namespace CarSearcher.Scrapers
                     fb_api_req_friendly_name = null,
                     variables = null,
                     server_timestamps = "true",
-                    doc_id = null
+                    doc_id = null,
+                    CreatedDate = DateTime.Now.Date
                 };
 
+                Logger.LogInformation("New keys fetched");
                 return fbMarketplaceRequest;
             }
             catch (Exception ex)
